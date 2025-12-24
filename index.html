@@ -55,6 +55,8 @@
         }
         .services {
             margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
         }
         .service-item {
             display: flex;
@@ -68,10 +70,19 @@
         }
         .service-name {
             flex: 1;
+            font-size: 14px;
         }
         .service-price {
             font-weight: bold;
-            margin: 0 15px;
+            margin: 0 10px;
+            min-width: 80px;
+            text-align: right;
+        }
+        .meter-input {
+            width: 70px !important;
+            padding: 8px !important;
+            font-size: 16px !important;
+            text-align: center;
         }
         .checkbox {
             width: 24px;
@@ -82,6 +93,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            flex-shrink: 0;
         }
         .checkbox.checked {
             background: #007aff;
@@ -135,11 +147,12 @@
                 <input type="number" id="price" placeholder="50000" value="50000">
             </div>
             
-           <div class="input-group">
-    <input type="text" id="search" placeholder="🔍 Поиск услуги..." oninput="filterServices()">
-</div>
-
-<div class="services" id="services"></div>
+            <!-- ПОИСК -->
+            <div class="input-group">
+                <input type="text" id="search" placeholder="🔍 Поиск услуги..." oninput="filterServices()">
+            </div>
+            
+            <div class="services" id="services"></div>
             
             <div class="input-group">
                 <label>Выезд (км от МКАД)</label>
@@ -157,99 +170,169 @@
     </div>
 
     <script>
-        // Список услуг (можно редактировать)
-const services = [
-    // МОЙКА
-    {name: "Вырез под мойку в столешнице", price: 1500},
-    {name: "Монтаж нержавеющей мойки", price: 1000},
-    {name: "Монтаж каменной мойки", price: 1400},
-    {name: "Подключение мойки (слив/сифон)", price: 800},
-    
-    // СМЕСИТЕЛЬ
-    {name: "Монтаж смесителя с подключением", price: 1200},
-    {name: "Вырез отверстия в столешнице под смеситель", price: 500},
-    {name: "Вырез отверстия в пластиковой столешнице под воду", price: 500},
-    {name: "Вырез отверстия в каменной столешнице под воду", price: 1000},
-    {name: "Монтаж ИПО с подключением", price: 4500},
-    {name: "Монтаж питьевого фильтра с подключением", price: 4000},
-    
-    // ВАРОЧНАЯ ПАНЕЛЬ
-    {name: "Вырез под варочную панель в пластиковой столешнице", price: 1500},
-    {name: "Вырез под варочную панель в каменной столешнице", price: 2500},
-    {name: "Монтаж варочной панели (без подключения)", price: 1000},
-    {name: "Подключение варочной поверхности", price: 500},
-    
-    // ДУХОВОЙ ШКАФ
-    {name: "Монтаж духового шкафа (без подключения)", price: 1000},
-    {name: "Подключение духового шкафа", price: 500},
-    
-    // СВЧ
-    {name: "Монтаж СВЧ (без подключения)", price: 1500},
-    {name: "Подключение СВЧ", price: 500},
-    
-    // ВЫТЯЖКА
-    {name: "Монтаж встроенной или подвесной вытяжки", price: 2000},
-    {name: "Подключение вытяжки к воздуховоду", price: 1000},
-    {name: "Протяжка воздуховода (гофры) за п.м.", price: 700},
-    
-    // ТЕХНИКА
-    {name: "Монтаж ПММ с подключением", price: 2500},
-    {name: "Монтаж стиральной машины с подключением", price: 2500},
-    {name: "Монтаж встраиваемого холодильника/холодильной камеры", price: 3500},
-    
-    // ДОПОЛНИТЕЛЬНЫЕ РАБОТЫ
-    {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350},
-    {name: "Выпил под трубы в столешнице", price: 350},
-    {name: "Переделка модуля", price: 1500},
-    {name: "Разводка электрики (проводов) за п.м.", price: 150},
-    {name: "Подключение светильника", price: 600},
-    {name: "Врезка светильника", price: 500},
-    {name: "Монтаж накладного светильника", price: 500},
-    {name: "Монтаж ручки", price: 200},
-    {name: "Монтаж сушилки усиленной", price: 300},
-    {name: "Монтаж рейлинга за м.п.", price: 1000},
-    {name: "Монтаж барной трубы", price: 500},
-    {name: "Выпил стеновой панели", price: 250},
-    {name: "Монтаж розетки", price: 350},
-    {name: "Выпил в стеновой панели под электрику", price: 350},
-    {name: "Монтаж диодной подсветки за п.м.", price: 700},
-    {name: "Подключение диодной подсветки", price: 1200},
-    {name: "Монтаж стеновой панели клиента", price: 4000},
-    {name: "Монтаж столешницы клиента (пластик)", price: 5000},
-    {name: "Монтаж напольного плинтуса клиента (мин. метр) за п.м.", price: 800},
-    {name: "Демонтаж плинтуса напольного клиента (мин. метр) за п.м.", price: 800},
-    {name: "Выпил подоконника", price: 3000}
-];
+        // ПОЛНЫЙ СПИСОК УСЛУГ ИЗ ПРАЙСА
+        const services = [
+            // МОЙКА
+            {name: "Вырез под мойку в столешнице", price: 1500},
+            {name: "Монтаж нержавеющей мойки", price: 1000},
+            {name: "Монтаж каменной мойки", price: 1400},
+            {name: "Подключение мойки (слив/сифон)", price: 800},
+            
+            // СМЕСИТЕЛЬ
+            {name: "Монтаж смесителя с подключением", price: 1200},
+            {name: "Вырез отверстия в столешнице под смеситель", price: 500},
+            {name: "Вырез отверстия в пластиковой столешнице под воду", price: 500},
+            {name: "Вырез отверстия в каменной столешнице под воду", price: 1000},
+            {name: "Монтаж ИПО с подключением", price: 4500},
+            {name: "Монтаж питьевого фильтра с подключением", price: 4000},
+            
+            // ВАРОЧНАЯ ПАНЕЛЬ
+            {name: "Вырез под варочную панель в пластиковой столешнице", price: 1500},
+            {name: "Вырез под варочную панель в каменной столешнице", price: 2500},
+            {name: "Монтаж варочной панели (без подключения)", price: 1000},
+            {name: "Подключение варочной поверхности", price: 500},
+            
+            // ДУХОВОЙ ШКАФ
+            {name: "Монтаж духового шкафа (без подключения)", price: 1000},
+            {name: "Подключение духового шкафа", price: 500},
+            
+            // СВЧ
+            {name: "Монтаж СВЧ (без подключения)", price: 1500},
+            {name: "Подключение СВЧ", price: 500},
+            
+            // ВЫТЯЖКА
+            {name: "Монтаж встроенной или подвесной вытяжки", price: 2000},
+            {name: "Подключение вытяжки к воздуховоду", price: 1000},
+            {name: "Протяжка воздуховода (гофры)", price: 700, meter: true},
+            
+            // ТЕХНИКА
+            {name: "Монтаж ПММ с подключением", price: 2500},
+            {name: "Монтаж стиральной машины с подключением", price: 2500},
+            {name: "Монтаж встраиваемого холодильника/холодильной камеры", price: 3500},
+            
+            // ДОПОЛНИТЕЛЬНЫЕ РАБОТЫ
+            {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350},
+            {name: "Выпил под трубы в столешнице", price: 350},
+            {name: "Переделка модуля", price: 1500},
+            {name: "Разводка электрики (проводов)", price: 150, meter: true},
+            {name: "Подключение светильника", price: 600},
+            {name: "Врезка светильника", price: 500},
+            {name: "Монтаж накладного светильника", price: 500},
+            {name: "Монтаж ручки", price: 200},
+            {name: "Монтаж сушилки усиленной", price: 300},
+            {name: "Монтаж рейлинга", price: 1000, meter: true},
+            {name: "Монтаж барной трубы", price: 500},
+            {name: "Выпил стеновой панели", price: 250},
+            {name: "Монтаж розетки", price: 350},
+            {name: "Выпил в стеновой панели под электрику", price: 350},
+            {name: "Монтаж диодной подсветки", price: 700, meter: true},
+            {name: "Подключение диодной подсветки", price: 1200},
+            {name: "Монтаж стеновой панели клиента", price: 4000},
+            {name: "Монтаж столешницы клиента (пластик)", price: 5000},
+            {name: "Монтаж напольного плинтуса клиента (мин. метр)", price: 800, meter: true},
+            {name: "Демонтаж плинтуса напольного клиента (мин. метр)", price: 800, meter: true},
+            {name: "Выпил подоконника", price: 3000}
+        ];
 
-        // Загружаем услуги
+        // ЗАГРУЗКА УСЛУГ С УЧЕТОМ МЕТРАЖА
         function loadServices() {
             const container = document.getElementById('services');
+            container.innerHTML = '';
+            
             services.forEach((service, index) => {
                 const div = document.createElement('div');
                 div.className = 'service-item';
-                div.innerHTML = `
-                    <div class="service-name">${service.name}</div>
-                    <div class="service-price">${service.price} руб</div>
-                    <div class="checkbox" onclick="toggleService(${index})"></div>
-                `;
+                div.id = 'service-' + index;
+                
+                // Если услуга с метражом
+                if (service.meter) {
+                    div.innerHTML = `
+                        <div class="service-name">${service.name} (за п.м.)</div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="number" 
+                                   class="meter-input" 
+                                   id="meter-${index}" 
+                                   placeholder="м" 
+                                   min="0" 
+                                   step="0.5" 
+                                   style="width: 60px; padding: 8px;"
+                                   oninput="updateMeterPrice(${index})">
+                            <span class="service-price" id="price-${index}">0 руб</span>
+                        </div>
+                        <div class="checkbox" onclick="toggleService(${index})"></div>
+                    `;
+                } else {
+                    // Обычная услуга
+                    div.innerHTML = `
+                        <div class="service-name">${service.name}</div>
+                        <div class="service-price">${service.price} руб</div>
+                        <div class="checkbox" onclick="toggleService(${index})"></div>
+                    `;
+                }
+                
                 container.appendChild(div);
             });
         }
 
-        // Переключение услуги
+        // ПЕРЕКЛЮЧЕНИЕ УСЛУГИ
         function toggleService(index) {
-            const checkbox = document.querySelectorAll('.checkbox')[index];
+            const checkbox = document.querySelector('#service-' + index + ' .checkbox');
+            const service = services[index];
+            
             checkbox.classList.toggle('checked');
+            
+            // Если это услуга с метражом и она включена, но метраж 0
+            if (service.meter && checkbox.classList.contains('checked')) {
+                const meterInput = document.getElementById('meter-' + index);
+                if (!meterInput.value || parseFloat(meterInput.value) === 0) {
+                    meterInput.value = '1'; // Ставим по умолчанию 1 метр
+                    updateMeterPrice(index);
+                }
+            }
+            
+            calculate();
         }
 
-        // Расчет
+        // ОБНОВЛЕНИЕ ЦЕНЫ ПРИ ИЗМЕНЕНИИ МЕТРАЖА
+        function updateMeterPrice(index) {
+            const service = services[index];
+            const meterInput = document.getElementById('meter-' + index);
+            const priceDisplay = document.getElementById('price-' + index);
+            
+            const meters = parseFloat(meterInput.value) || 0;
+            const totalPrice = meters * service.price;
+            
+            priceDisplay.textContent = totalPrice + ' руб';
+            
+            // Обновляем чекбокс
+            const checkbox = document.querySelector('#service-' + index + ' .checkbox');
+            if (meters > 0 && !checkbox.classList.contains('checked')) {
+                checkbox.classList.add('checked');
+            }
+            
+            calculate();
+        }
+
+        // ОСНОВНОЙ РАСЧЕТ
         function calculate() {
             const price = parseInt(document.getElementById('price').value) || 0;
             const assembly = Math.round(price * 0.1);
             
             let extra = 0;
+            
+            // Считаем все выбранные услуги
             document.querySelectorAll('.checkbox.checked').forEach((cb, index) => {
-                extra += services[index].price;
+                const service = services[index];
+                
+                if (service.meter) {
+                    // Для услуг с метражом
+                    const meterInput = document.getElementById('meter-' + index);
+                    const meters = parseFloat(meterInput.value) || 0;
+                    extra += meters * service.price;
+                } else {
+                    // Для обычных услуг
+                    extra += service.price;
+                }
             });
             
             const km = parseInt(document.getElementById('km').value) || 0;
@@ -265,12 +348,10 @@ const services = [
             `;
             
             document.getElementById('result').style.display = 'block';
-            
-            // Сохраняем в историю
             saveToHistory(total);
         }
 
-        // Сохранение истории
+        // СОХРАНЕНИЕ В ИСТОРИЮ
         function saveToHistory(total) {
             let history = JSON.parse(localStorage.getItem('calcHistory') || '[]');
             history.unshift({
@@ -281,14 +362,7 @@ const services = [
             localStorage.setItem('calcHistory', JSON.stringify(history));
         }
 
-                // Авторасчет при изменении
-        document.getElementById('price').addEventListener('input', calculate);
-        document.getElementById('km').addEventListener('input', calculate);
-        
-        // Инициализация
-        loadServices();
-        
-        // Поиск услуг
+        // ПОИСК УСЛУГ
         function filterServices() {
             const searchText = document.getElementById('search').value.toLowerCase();
             const serviceItems = document.querySelectorAll('.service-item');
@@ -302,10 +376,16 @@ const services = [
                 }
             });
         }
+
+        // АВТОРАСЧЕТ ПРИ ИЗМЕНЕНИИ
+        document.getElementById('price').addEventListener('input', calculate);
+        document.getElementById('km').addEventListener('input', calculate);
         
-        // Добавляем обработчик поиска
+        // ИНИЦИАЛИЗАЦИЯ
+        loadServices();
+        
+        // ДОБАВЛЯЕМ ОБРАБОТЧИК ПОИСКА
         document.getElementById('search').addEventListener('input', filterServices);
-    </script>  <!-- ЗАКРЫВАЮЩИЙ ТЕГ -->
+    </script>
 </body>
 </html>
-
