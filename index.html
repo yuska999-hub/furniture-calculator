@@ -281,13 +281,31 @@ const services = [
             localStorage.setItem('calcHistory', JSON.stringify(history));
         }
 
-        // Авторасчет при изменении
+                // Авторасчет при изменении
         document.getElementById('price').addEventListener('input', calculate);
         document.getElementById('km').addEventListener('input', calculate);
         
         // Инициализация
         loadServices();
-    </script>
+        
+        // Поиск услуг
+        function filterServices() {
+            const searchText = document.getElementById('search').value.toLowerCase();
+            const serviceItems = document.querySelectorAll('.service-item');
+            
+            serviceItems.forEach(item => {
+                const serviceName = item.querySelector('.service-name').textContent.toLowerCase();
+                if (serviceName.includes(searchText)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        // Добавляем обработчик поиска
+        document.getElementById('search').addEventListener('input', filterServices);
+    </script>  <!-- ЗАКРЫВАЮЩИЙ ТЕГ -->
 </body>
-
 </html>
+
