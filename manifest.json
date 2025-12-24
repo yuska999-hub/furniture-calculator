@@ -1,0 +1,21 @@
+{
+  "name": "Калькулятор сборки",
+  "short_name": "Сборка",
+  "description": "Расчет стоимости сборки мебели",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#007aff",
+  "theme_color": "#007aff",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512", 
+      "type": "image/png"
+    }
+  ]
+}

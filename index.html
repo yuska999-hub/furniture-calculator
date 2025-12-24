@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор сборки</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .app {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: #007aff;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+        .content {
+            padding: 20px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 18px;
+        }
+        .services {
+            margin: 20px 0;
+        }
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .service-item:last-child {
+            border-bottom: none;
+        }
+        .service-name {
+            flex: 1;
+        }
+        .service-price {
+            font-weight: bold;
+            margin: 0 15px;
+        }
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid #007aff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .checkbox.checked {
+            background: #007aff;
+        }
+        .checkbox.checked::after {
+            content: "✓";
+            color: white;
+            font-weight: bold;
+        }
+        button {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(to right, #34c759, #2dbd58);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .total {
+            font-size: 42px;
+            font-weight: bold;
+            color: #007aff;
+            margin: 10px 0;
+        }
+        .details {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <h1>🪛 Калькулятор сборки</h1>
+        </div>
+        
+        <div class="content">
+            <div class="input-group">
+                <label>Стоимость мебели (руб)</label>
+                <input type="number" id="price" placeholder="50000" value="50000">
+            </div>
+            
+            <div class="services" id="services"></div>
+            
+            <div class="input-group">
+                <label>Выезд (км от МКАД)</label>
+                <input type="number" id="km" placeholder="0" value="0">
+            </div>
+            
+            <button onclick="calculate()">РАССЧИТАТЬ</button>
+            
+            <div class="result" id="result" style="display: none;">
+                <div>ИТОГО К ОПЛАТЕ</div>
+                <div class="total" id="total">0 руб</div>
+                <div class="details" id="details"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Список услуг (можно редактировать)
+        const services = [
+            {name: "Вырез под мойку", price: 1500},
+            {name: "Монтаж нерж. мойки", price: 1000},
+            {name: "Монтаж смесителя", price: 1200},
+            {name: "Подключение ПММ", price: 2500},
+            {name: "Монтаж холодильника", price: 3500},
+            {name: "Монтаж розетки", price: 350},
+            {name: "Монтаж ручки", price: 200},
+            {name: "Монтаж рейлинга", price: 1000}
+        ];
+
+        // Загружаем услуги
+        function loadServices() {
+            const container = document.getElementById('services');
+            services.forEach((service, index) => {
+                const div = document.createElement('div');
+                div.className = 'service-item';
+                div.innerHTML = `
+                    <div class="service-name">${service.name}</div>
+                    <div class="service-price">${service.price} руб</div>
+                    <div class="checkbox" onclick="toggleService(${index})"></div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Переключение услуги
+        function toggleService(index) {
+            const checkbox = document.querySelectorAll('.checkbox')[index];
+            checkbox.classList.toggle('checked');
+        }
+
+        // Расчет
+        function calculate() {
+            const price = parseInt(document.getElementById('price').value) || 0;
+            const assembly = Math.round(price * 0.1);
+            
+            let extra = 0;
+            document.querySelectorAll('.checkbox.checked').forEach((cb, index) => {
+                extra += services[index].price;
+            });
+            
+            const km = parseInt(document.getElementById('km').value) || 0;
+            const travel = Math.max(0, km - 10) * 40;
+            
+            const total = assembly + extra + travel;
+            
+            document.getElementById('total').textContent = total.toLocaleString() + ' руб';
+            document.getElementById('details').innerHTML = `
+                Сборка (10%): ${assembly.toLocaleString()} руб<br>
+                Доп. работы: ${extra.toLocaleString()} руб<br>
+                Выезд: ${travel.toLocaleString()} руб
+            `;
+            
+            document.getElementById('result').style.display = 'block';
+            
+            // Сохраняем в историю
+            saveToHistory(total);
+        }
+
+        // Сохранение истории
+        function saveToHistory(total) {
+            let history = JSON.parse(localStorage.getItem('calcHistory') || '[]');
+            history.unshift({
+                date: new Date().toLocaleString(),
+                total: total
+            });
+            if (history.length > 10) history.pop();
+            localStorage.setItem('calcHistory', JSON.stringify(history));
+        }
+
+        // Авторасчет при изменении
+        document.getElementById('price').addEventListener('input', calculate);
+        document.getElementById('km').addEventListener('input', calculate);
+        
+        // Инициализация
+        loadServices();
+    </script>
+</body>
+</html>
