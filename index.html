@@ -7,8 +7,10 @@
     <title>Калькулятор сборки</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#007aff">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -115,6 +117,7 @@
             padding: 1px 8px;
             font-size: 11px;
             margin-left: 8px;
+            transition: background 0.2s;
         }
         .service-item {
             display: flex;
@@ -547,7 +550,6 @@
                 container.appendChild(catDiv);
             });
 
-            // Восстанавливаем черновик
             restoreDraft();
         }
 
@@ -653,11 +655,11 @@
             document.getElementById('total').textContent = total.toLocaleString('ru-RU') + ' руб';
             document.getElementById('selectedBadge').textContent = 'Выбрано услуг: ' + selectedList.length;
 
-            // Обновляем счётчики категорий
             categories.forEach((cat, catIdx) => {
                 const count = perCategory[cat.title] || 0;
-                document.getElementById('catcount-' + catIdx).textContent = count;
-                document.getElementById('catcount-' + catIdx).style.background = count ? '#34c759' : '#ccc';
+                const badge = document.getElementById('catcount-' + catIdx);
+                badge.textContent = count;
+                badge.style.background = count ? '#34c759' : '#ccc';
             });
 
             let detailsHTML = `
@@ -677,7 +679,6 @@
             document.getElementById('details').innerHTML = detailsHTML;
             document.getElementById('result').style.display = 'block';
 
-            // Мета для печати
             const name = document.getElementById('clientName').value.trim();
             const addr = document.getElementById('clientAddress').value.trim();
             const metaParts = [];
@@ -719,9 +720,8 @@
             document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
             document.querySelectorAll('.meter-input').forEach(inp => inp.value = '');
             document.querySelectorAll('.qty-input').forEach(inp => inp.value = '1');
-            document.querySelectorAll('[id^="price-"]').forEach(el => {
-                if (!el.id.startsWith('price') || el.id === 'price') return;
-                if (el.classList.contains('service-price')) el.textContent = '0 руб';
+            document.querySelectorAll('.service-price').forEach(el => {
+                el.textContent = '0 руб';
             });
             document.querySelectorAll('.service-item').forEach(i => i.style.display = 'flex');
             document.getElementById('result').style.display = 'none';
@@ -735,7 +735,6 @@
                 const name = item.querySelector('.service-name').textContent.toLowerCase();
                 item.style.display = name.includes(q) ? 'flex' : 'none';
             });
-            // Автораскрытие категорий при поиске
             if (q) {
                 document.querySelectorAll('.category').forEach(c => c.classList.remove('collapsed'));
             }
@@ -850,6 +849,15 @@
 
         // ИНИЦИАЛИЗАЦИЯ
         loadServices();
+
+        // РЕГИСТРАЦИЯ SERVICE WORKER
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('SW зарегистрирован:', reg.scope))
+                    .catch(err => console.warn('SW ошибка:', err));
+            });
+        }
     </script>
 </body>
 </html>
