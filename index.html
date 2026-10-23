@@ -48,66 +48,105 @@
             font-weight: 600;
         }
         .content { padding: 20px; }
-        .input-group { margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; }
         .input-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #333;
             font-weight: 600;
+            font-size: 14px;
         }
         .input-group input {
             width: 100%;
-            padding: 15px;
+            padding: 13px;
             border: 2px solid #e0e0e0;
             border-radius: 12px;
-            font-size: 18px;
+            font-size: 16px;
         }
         .input-group input:focus {
             outline: none;
             border-color: #007aff;
         }
+        .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
         .services {
             margin: 20px 0;
-            max-height: 400px;
+            max-height: 420px;
             overflow-y: auto;
             border: 1px solid #f0f0f0;
             border-radius: 12px;
+        }
+        .category {
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .category:last-child { border-bottom: none; }
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            color: #007aff;
+            user-select: none;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .category-header .arrow {
+            transition: transform 0.2s;
+            font-size: 12px;
+        }
+        .category.collapsed .category-header .arrow {
+            transform: rotate(-90deg);
+        }
+        .category.collapsed .service-item {
+            display: none !important;
+        }
+        .category-count {
+            background: #007aff;
+            color: white;
+            border-radius: 10px;
+            padding: 1px 8px;
+            font-size: 11px;
+            margin-left: 8px;
         }
         .service-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #f0f0f0;
-            gap: 10px;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f5f5f5;
+            gap: 8px;
         }
         .service-item:last-child { border-bottom: none; }
         .service-name {
             flex: 1;
-            font-size: 14px;
-            line-height: 1.4;
+            font-size: 13px;
+            line-height: 1.3;
         }
         .service-price {
             font-weight: bold;
-            min-width: 70px;
+            min-width: 65px;
             text-align: right;
-            font-size: 14px;
+            font-size: 13px;
         }
-        .meter-input {
-            width: 65px !important;
-            padding: 8px !important;
-            font-size: 16px !important;
-            text-align: center;
-        }
-        .qty-input {
+        .meter-input, .qty-input {
             width: 55px !important;
-            padding: 8px !important;
-            font-size: 16px !important;
+            padding: 6px !important;
+            font-size: 14px !important;
             text-align: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
         }
         .checkbox {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 6px;
             border: 2px solid #007aff;
             display: flex;
@@ -122,87 +161,92 @@
             content: "✓";
             color: white;
             font-weight: bold;
+            font-size: 14px;
         }
         button.main-btn {
             width: 100%;
-            padding: 18px;
+            padding: 16px;
             background: linear-gradient(to right, #34c759, #2dbd58);
             color: white;
             border: none;
             border-radius: 15px;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
-            margin: 15px 0;
+            margin: 10px 0;
         }
         button.reset-btn {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
             background: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        button.print-btn, button.share-btn {
+            width: 100%;
+            padding: 13px;
             color: white;
             border: none;
             border-radius: 12px;
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 15px;
+            margin-top: 10px;
         }
-        button.print-btn {
-            width: 100%;
-            padding: 14px;
-            background: #007aff;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-        }
+        button.print-btn { background: #007aff; }
+        button.share-btn { background: #25d366; }
         .result {
             background: #f8f9fa;
-            padding: 25px;
+            padding: 22px;
             border-radius: 15px;
             text-align: center;
             margin-top: 20px;
         }
+        .selected-badge {
+            display: inline-block;
+            background: #007aff;
+            color: white;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
         .total {
-            font-size: 42px;
+            font-size: 38px;
             font-weight: bold;
             color: #007aff;
-            margin: 10px 0;
+            margin: 8px 0;
         }
         .details {
             color: #666;
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 13px;
+            line-height: 1.5;
             text-align: left;
-            margin-top: 15px;
-            padding-top: 15px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 1px solid #e0e0e0;
         }
         .details .line {
             display: flex;
             justify-content: space-between;
-            padding: 4px 0;
+            padding: 3px 0;
         }
         .details .line.selected { color: #007aff; }
         .print-header {
             display: none;
             text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
             border-bottom: 2px solid #007aff;
         }
-        .print-header h2 {
-            color: #007aff;
-            font-size: 22px;
-            margin-bottom: 5px;
-        }
-        .print-header .date {
-            color: #666;
-            font-size: 13px;
-        }
+        .print-header h2 { color: #007aff; font-size: 20px; margin-bottom: 4px; }
+        .print-header .meta { color: #666; font-size: 12px; line-height: 1.5; }
         .modal {
             position: fixed;
             inset: 0;
@@ -217,59 +261,48 @@
         .modal-content {
             background: white;
             border-radius: 20px;
-            padding: 25px;
+            padding: 22px;
             max-width: 400px;
             width: 100%;
             max-height: 80vh;
             overflow-y: auto;
         }
-        .modal-content h2 { margin-bottom: 15px; color: #333; }
+        .modal-content h2 { margin-bottom: 12px; color: #333; font-size: 18px; }
         .history-item {
-            padding: 12px;
+            padding: 10px;
             border-bottom: 1px solid #f0f0f0;
             display: flex;
             justify-content: space-between;
-            font-size: 14px;
+            font-size: 13px;
         }
         .history-item:last-child { border-bottom: none; }
-        .history-item .date { color: #999; font-size: 12px; }
+        .history-item .date { color: #999; font-size: 11px; }
         .history-item .sum { font-weight: bold; color: #007aff; }
-        .close-modal {
-            width: 100%;
-            padding: 12px;
-            background: #007aff;
-            color: white;
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 11px;
             border: none;
             border-radius: 12px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 15px;
         }
+        .btn-close { background: #007aff; color: white; }
+        .btn-clear { background: #ff3b30; color: white; }
 
-        /* СТИЛИ ДЛЯ ПЕЧАТИ */
         @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-            .app {
-                max-width: 100%;
-                box-shadow: none;
-                border-radius: 0;
-            }
-            .header,
-            .input-group,
-            .services,
-            .main-btn,
-            .reset-btn,
-            .print-btn,
-            .modal {
+            body { background: white; padding: 0; }
+            .app { max-width: 100%; box-shadow: none; border-radius: 0; }
+            .header, .input-group, .services, .main-btn, .reset-btn,
+            .print-btn, .share-btn, .modal, .selected-badge {
                 display: none !important;
             }
-            .content {
-                padding: 0;
-            }
+            .content { padding: 0; }
             .result {
                 display: block !important;
                 background: white;
@@ -277,20 +310,10 @@
                 border-radius: 0;
                 margin-top: 0;
             }
-            .print-header {
-                display: block;
-            }
-            .total {
-                font-size: 36px;
-                color: #000;
-            }
-            .details {
-                color: #000;
-                border-top: 1px solid #999;
-            }
-            .details .line.selected {
-                color: #000;
-            }
+            .print-header { display: block; }
+            .total { font-size: 32px; color: #000; }
+            .details { color: #000; border-top: 1px solid #999; }
+            .details .line.selected { color: #000; }
         }
     </style>
 </head>
@@ -302,6 +325,16 @@
         </div>
 
         <div class="content">
+            <div class="input-group">
+                <label>Имя клиента (необязательно)</label>
+                <input type="text" id="clientName" placeholder="Иванов Иван">
+            </div>
+
+            <div class="input-group">
+                <label>Адрес (необязательно)</label>
+                <input type="text" id="clientAddress" placeholder="ул. Ленина, 10, кв. 5">
+            </div>
+
             <div class="input-group">
                 <label>Стоимость мебели (руб)</label>
                 <input type="number" id="price" placeholder="50000" value="50000" min="0" step="1000">
@@ -316,6 +349,7 @@
             <div class="input-group">
                 <label>Выезд (км от ЕКАД)</label>
                 <input type="number" id="km" placeholder="0" value="0" min="0">
+                <div class="hint">Бесплатно до 10 км, далее 40 ₽/км</div>
             </div>
 
             <button class="main-btn" onclick="calculateAndSave()">РАССЧИТАТЬ</button>
@@ -324,12 +358,14 @@
             <div class="result" id="result" style="display: none;">
                 <div class="print-header">
                     <h2>🪛 Калькулятор сборки</h2>
-                    <div class="date" id="printDate"></div>
+                    <div class="meta" id="printMeta"></div>
                 </div>
+                <div class="selected-badge" id="selectedBadge">Выбрано услуг: 0</div>
                 <div>ИТОГО К ОПЛАТЕ</div>
                 <div class="total" id="total">0 руб</div>
                 <div class="details" id="details"></div>
                 <button class="print-btn" onclick="printResult()">🖨 ПЕЧАТЬ / PDF</button>
+                <button class="share-btn" onclick="shareResult()">📱 ОТПРАВИТЬ В WHATSAPP</button>
             </div>
         </div>
     </div>
@@ -339,176 +375,235 @@
         <div class="modal-content">
             <h2>История расчетов</h2>
             <div id="historyList"></div>
-            <button class="close-modal" onclick="closeHistory()">Закрыть</button>
+            <div class="modal-actions">
+                <button class="btn-clear" onclick="clearHistory()">Очистить</button>
+                <button class="btn-close" onclick="closeHistory()">Закрыть</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // ПРОЦЕНТ СБОРКИ
-        const ASSEMBLY_PERCENT = 0.12; // 12%
+        // НАСТРОЙКИ
+        const ASSEMBLY_PERCENT = 0.12;   // 12% сборки
+        const MIN_ASSEMBLY = 3000;       // минимальная стоимость сборки, руб
+        const FREE_KM = 10;              // бесплатные км от ЕКАД
+        const KM_PRICE = 40;             // цена за км свыше
 
-        // ПОЛНЫЙ СПИСОК УСЛУГ
-        const services = [
-            // МОЙКА
-            {name: "Вырез под мойку в столешнице", price: 1500, qty: true},
-            {name: "Монтаж нержавеющей мойки", price: 1000},
-            {name: "Монтаж каменной мойки", price: 1400},
-            {name: "Подключение мойки (слив/сифон)", price: 800},
-
-            // СМЕСИТЕЛЬ
-            {name: "Монтаж смесителя с подключением", price: 1200},
-            {name: "Вырез отверстия в столешнице под смеситель", price: 500, qty: true},
-            {name: "Вырез отверстия в пластиковой столешнице под воду", price: 500, qty: true},
-            {name: "Вырез отверстия в каменной столешнице под воду", price: 1000, qty: true},
-            {name: "Монтаж ИПО с подключением", price: 4500},
-            {name: "Монтаж питьевого фильтра с подключением", price: 4000},
-
-            // ВАРОЧНАЯ ПАНЕЛЬ
-            {name: "Вырез под варочную панель в пластиковой столешнице", price: 1500, qty: true},
-            {name: "Вырез под варочную панель в каменной столешнице", price: 2500, qty: true},
-            {name: "Монтаж варочной панели (без подключения)", price: 1000},
-            {name: "Подключение варочной поверхности", price: 500},
-
-            // ДУХОВОЙ ШКАФ
-            {name: "Монтаж духового шкафа (без подключения)", price: 1000},
-            {name: "Подключение духового шкафа", price: 500},
-
-            // СВЧ
-            {name: "Монтаж СВЧ (без подключения)", price: 1500},
-            {name: "Подключение СВЧ", price: 500},
-
-            // ВЫТЯЖКА
-            {name: "Монтаж встроенной или подвесной вытяжки", price: 2000},
-            {name: "Подключение вытяжки к воздуховоду", price: 1000},
-            {name: "Протяжка воздуховода (гофры)", price: 700, meter: true},
-
-            // ТЕХНИКА
-            {name: "Монтаж ПММ с подключением", price: 2500},
-            {name: "Монтаж стиральной машины с подключением", price: 2500},
-            {name: "Монтаж встраиваемого холодильника/холодильной камеры", price: 3500},
-
-            // ДОПОЛНИТЕЛЬНЫЕ РАБОТЫ
-            {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350, qty: true},
-            {name: "Выпил под трубы в столешнице", price: 350, qty: true},
-            {name: "Переделка модуля", price: 1500},
-            {name: "Разводка электрики (проводов)", price: 150, meter: true},
-            {name: "Подключение светильника", price: 600},
-            {name: "Врезка светильника", price: 500},
-            {name: "Монтаж накладного светильника", price: 500},
-            {name: "Монтаж ручки", price: 200},
-            {name: "Монтаж сушилки усиленной", price: 300},
-            {name: "Монтаж рейлинга", price: 1000, meter: true},
-            {name: "Монтаж барной трубы", price: 500},
-            {name: "Выпил стеновой панели", price: 250, qty: true},
-            {name: "Монтаж розетки", price: 350, qty: true},
-            {name: "Вырез под розетку в керамограните", price: 500, qty: true},
-            {name: "Вырез под розетку в ЛДСП", price: 250, qty: true},
-            {name: "Выпил в стеновой панели под электрику", price: 350, qty: true},
-            {name: "Монтаж диодной подсветки", price: 700, meter: true},
-            {name: "Подключение диодной подсветки", price: 1200},
-            {name: "Монтаж стеновой панели клиента", price: 4000},
-            {name: "Монтаж столешницы клиента (пластик)", price: 5000},
-            {name: "Монтаж напольного плинтуса клиента (мин. метр)", price: 800, meter: true},
-            {name: "Демонтаж плинтуса напольного клиента (мин. метр)", price: 800, meter: true},
-            {name: "Выпил подоконника", price: 3000, qty: true}
+        // СПИСОК УСЛУГ С КАТЕГОРИЯМИ
+        const categories = [
+            {
+                title: "Мойка",
+                services: [
+                    {name: "Вырез под мойку в столешнице", price: 1500, qty: true},
+                    {name: "Монтаж нержавеющей мойки", price: 1000},
+                    {name: "Монтаж каменной мойки", price: 1400},
+                    {name: "Подключение мойки (слив/сифон)", price: 800}
+                ]
+            },
+            {
+                title: "Смеситель",
+                services: [
+                    {name: "Монтаж смесителя с подключением", price: 1200},
+                    {name: "Вырез отверстия в столешнице под смеситель", price: 500, qty: true},
+                    {name: "Вырез отверстия в пластиковой столешнице под воду", price: 500, qty: true},
+                    {name: "Вырез отверстия в каменной столешнице под воду", price: 1000, qty: true},
+                    {name: "Монтаж ИПО с подключением", price: 4500},
+                    {name: "Монтаж питьевого фильтра с подключением", price: 4000}
+                ]
+            },
+            {
+                title: "Варочная панель",
+                services: [
+                    {name: "Вырез под варочную панель в пластиковой столешнице", price: 1500, qty: true},
+                    {name: "Вырез под варочную панель в каменной столешнице", price: 2500, qty: true},
+                    {name: "Монтаж варочной панели (без подключения)", price: 1000},
+                    {name: "Подключение варочной поверхности", price: 500}
+                ]
+            },
+            {
+                title: "Духовой шкаф / СВЧ",
+                services: [
+                    {name: "Монтаж духового шкафа (без подключения)", price: 1000},
+                    {name: "Подключение духового шкафа", price: 500},
+                    {name: "Монтаж СВЧ (без подключения)", price: 1500},
+                    {name: "Подключение СВЧ", price: 500}
+                ]
+            },
+            {
+                title: "Вытяжка",
+                services: [
+                    {name: "Монтаж встроенной или подвесной вытяжки", price: 2000},
+                    {name: "Подключение вытяжки к воздуховоду", price: 1000},
+                    {name: "Протяжка воздуховода (гофры)", price: 700, meter: true}
+                ]
+            },
+            {
+                title: "Техника",
+                services: [
+                    {name: "Монтаж ПММ с подключением", price: 2500},
+                    {name: "Монтаж стиральной машины с подключением", price: 2500},
+                    {name: "Монтаж встраиваемого холодильника/холодильной камеры", price: 3500}
+                ]
+            },
+            {
+                title: "Электрика и свет",
+                services: [
+                    {name: "Разводка электрики (проводов)", price: 150, meter: true},
+                    {name: "Подключение светильника", price: 600},
+                    {name: "Врезка светильника", price: 500},
+                    {name: "Монтаж накладного светильника", price: 500},
+                    {name: "Монтаж розетки", price: 350, qty: true},
+                    {name: "Вырез под розетку в керамограните", price: 500, qty: true},
+                    {name: "Вырез под розетку в ЛДСП", price: 250, qty: true},
+                    {name: "Выпил в стеновой панели под электрику", price: 350, qty: true},
+                    {name: "Монтаж диодной подсветки", price: 700, meter: true},
+                    {name: "Подключение диодной подсветки", price: 1200}
+                ]
+            },
+            {
+                title: "Столешницы и панели",
+                services: [
+                    {name: "Монтаж стеновой панели клиента", price: 4000},
+                    {name: "Монтаж столешницы клиента (пластик)", price: 5000},
+                    {name: "Выпил стеновой панели", price: 250, qty: true},
+                    {name: "Выпил подоконника", price: 3000, qty: true}
+                ]
+            },
+            {
+                title: "Доп. работы",
+                services: [
+                    {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350, qty: true},
+                    {name: "Выпил под трубы в столешнице", price: 350, qty: true},
+                    {name: "Переделка модуля", price: 1500},
+                    {name: "Монтаж ручки", price: 200},
+                    {name: "Монтаж сушилки усиленной", price: 300},
+                    {name: "Монтаж рейлинга", price: 1000, meter: true},
+                    {name: "Монтаж барной трубы", price: 500},
+                    {name: "Монтаж напольного плинтуса клиента (мин. метр)", price: 800, meter: true},
+                    {name: "Демонтаж плинтуса напольного клиента (мин. метр)", price: 800, meter: true}
+                ]
+            }
         ];
 
-        // ЗАГРУЗКА УСЛУГ
+        // Плоский список для удобства
+        const allServices = [];
+        categories.forEach(cat => {
+            cat.services.forEach(s => {
+                s.category = cat.title;
+                s.index = allServices.length;
+                allServices.push(s);
+            });
+        });
+
+        // ЗАГРУЗКА УСЛУГ ПО КАТЕГОРИЯМ
         function loadServices() {
             const container = document.getElementById('services');
             container.innerHTML = '';
 
-            services.forEach((service, index) => {
-                const div = document.createElement('div');
-                div.className = 'service-item';
-                div.id = 'service-' + index;
+            categories.forEach((cat, catIdx) => {
+                const catDiv = document.createElement('div');
+                catDiv.className = 'category';
+                catDiv.id = 'category-' + catIdx;
 
-                if (service.meter) {
-                    div.innerHTML = `
-                        <div class="service-name">${service.name} (за п.м.)</div>
-                        <input type="number" class="meter-input" id="meter-${index}" placeholder="м" min="0" step="0.5" oninput="updateMeterPrice(${index})">
-                        <span class="service-price" id="price-${index}">0 руб</span>
-                        <div class="checkbox" onclick="toggleService(${index})"></div>
-                    `;
-                } else if (service.qty) {
-                    div.innerHTML = `
-                        <div class="service-name">${service.name}</div>
-                        <input type="number" class="qty-input" id="qty-${index}" placeholder="шт" min="1" step="1" value="1" oninput="updateQtyPrice(${index})">
-                        <span class="service-price" id="price-${index}">${service.price} руб</span>
-                        <div class="checkbox" onclick="toggleService(${index})"></div>
-                    `;
-                } else {
-                    div.innerHTML = `
-                        <div class="service-name">${service.name}</div>
-                        <div class="service-price">${service.price} руб</div>
-                        <div class="checkbox" onclick="toggleService(${index})"></div>
-                    `;
-                }
-                container.appendChild(div);
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.innerHTML = `
+                    <span>${cat.title} <span class="category-count" id="catcount-${catIdx}">0</span></span>
+                    <span class="arrow">▼</span>
+                `;
+                header.onclick = () => toggleCategory(catIdx);
+                catDiv.appendChild(header);
+
+                cat.services.forEach(service => {
+                    const idx = service.index;
+                    const div = document.createElement('div');
+                    div.className = 'service-item';
+                    div.id = 'service-' + idx;
+
+                    if (service.meter) {
+                        div.innerHTML = `
+                            <div class="service-name">${service.name} (п.м.)</div>
+                            <input type="number" class="meter-input" id="meter-${idx}" placeholder="м" min="0" step="0.5" oninput="updateMeterPrice(${idx})">
+                            <span class="service-price" id="price-${idx}">0 руб</span>
+                            <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>
+                        `;
+                    } else if (service.qty) {
+                        div.innerHTML = `
+                            <div class="service-name">${service.name}</div>
+                            <input type="number" class="qty-input" id="qty-${idx}" placeholder="шт" min="1" step="1" value="1" oninput="updateQtyPrice(${idx})">
+                            <span class="service-price" id="price-${idx}">${service.price} руб</span>
+                            <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>
+                        `;
+                    } else {
+                        div.innerHTML = `
+                            <div class="service-name">${service.name}</div>
+                            <div class="service-price">${service.price} руб</div>
+                            <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>
+                        `;
+                    }
+                    catDiv.appendChild(div);
+                });
+
+                container.appendChild(catDiv);
             });
+
+            // Восстанавливаем черновик
+            restoreDraft();
+        }
+
+        // СВОРАЧИВАНИЕ КАТЕГОРИИ
+        function toggleCategory(catIdx) {
+            const cat = document.getElementById('category-' + catIdx);
+            cat.classList.toggle('collapsed');
         }
 
         // ПЕРЕКЛЮЧЕНИЕ УСЛУГИ
         function toggleService(index) {
-            const checkbox = document.querySelector('#service-' + index + ' .checkbox');
-            const service = services[index];
-            checkbox.classList.toggle('checked');
+            const cb = document.getElementById('cb-' + index);
+            const service = allServices[index];
+            cb.classList.toggle('checked');
 
-            if (service.meter && checkbox.classList.contains('checked')) {
+            if (service.meter && cb.classList.contains('checked')) {
                 const meterInput = document.getElementById('meter-' + index);
                 if (!meterInput.value || parseFloat(meterInput.value) <= 0) {
                     meterInput.value = '1';
                     updateMeterPrice(index);
                 }
             }
-
-            if (service.qty && checkbox.classList.contains('checked')) {
+            if (service.qty && cb.classList.contains('checked')) {
                 const qtyInput = document.getElementById('qty-' + index);
                 if (!qtyInput.value || parseInt(qtyInput.value) <= 0) {
                     qtyInput.value = '1';
                     updateQtyPrice(index);
                 }
             }
-
             calculate();
+            saveDraft();
         }
 
-        // ОБНОВЛЕНИЕ ЦЕНЫ ПО МЕТРАЖУ
         function updateMeterPrice(index) {
-            const service = services[index];
+            const service = allServices[index];
             const meterInput = document.getElementById('meter-' + index);
             const priceDisplay = document.getElementById('price-' + index);
-
             let meters = parseFloat(meterInput.value) || 0;
             if (meters < 0) { meters = 0; meterInput.value = 0; }
-
-            const totalPrice = meters * service.price;
-            priceDisplay.textContent = totalPrice + ' руб';
-
-            const checkbox = document.querySelector('#service-' + index + ' .checkbox');
-            if (meters > 0) {
-                checkbox.classList.add('checked');
-            } else {
-                checkbox.classList.remove('checked');
-            }
+            priceDisplay.textContent = (meters * service.price) + ' руб';
+            const cb = document.getElementById('cb-' + index);
+            if (meters > 0) cb.classList.add('checked'); else cb.classList.remove('checked');
             calculate();
+            saveDraft();
         }
 
-        // ОБНОВЛЕНИЕ ЦЕНЫ ПО КОЛИЧЕСТВУ
         function updateQtyPrice(index) {
-            const service = services[index];
+            const service = allServices[index];
             const qtyInput = document.getElementById('qty-' + index);
             const priceDisplay = document.getElementById('price-' + index);
-
             let qty = parseInt(qtyInput.value) || 0;
             if (qty < 1) { qty = 1; qtyInput.value = 1; }
-
-            const totalPrice = qty * service.price;
-            priceDisplay.textContent = totalPrice + ' руб';
-
-            const checkbox = document.querySelector('#service-' + index + ' .checkbox');
-            checkbox.classList.add('checked');
+            priceDisplay.textContent = (qty * service.price) + ' руб';
+            document.getElementById('cb-' + index).classList.add('checked');
             calculate();
+            saveDraft();
         }
 
         // ОСНОВНОЙ РАСЧЕТ
@@ -516,48 +611,60 @@
             let price = parseInt(document.getElementById('price').value) || 0;
             if (price < 0) price = 0;
 
-            const assembly = Math.round(price * ASSEMBLY_PERCENT);
+            let assembly = Math.round(price * ASSEMBLY_PERCENT);
+            if (assembly < MIN_ASSEMBLY && price > 0) assembly = MIN_ASSEMBLY;
+
             let extra = 0;
             const selectedList = [];
+            const perCategory = {};
 
-            document.querySelectorAll('.checkbox.checked').forEach((cb) => {
-                const idx = parseInt(cb.closest('.service-item').id.replace('service-', ''));
-                const service = services[idx];
+            document.querySelectorAll('.checkbox.checked').forEach(cb => {
+                const idx = parseInt(cb.id.replace('cb-', ''));
+                const service = allServices[idx];
                 if (!service) return;
 
+                let sum = 0, text = '';
                 if (service.meter) {
-                    const meterInput = document.getElementById('meter-' + idx);
-                    const meters = parseFloat(meterInput.value) || 0;
-                    const sum = meters * service.price;
-                    if (sum > 0) {
-                        extra += sum;
-                        selectedList.push(`${service.name} — ${meters} м × ${service.price} = ${sum} руб`);
-                    }
+                    const meters = parseFloat(document.getElementById('meter-' + idx).value) || 0;
+                    sum = meters * service.price;
+                    if (sum > 0) text = `${service.name} — ${meters} м × ${service.price} = ${sum} руб`;
                 } else if (service.qty) {
-                    const qtyInput = document.getElementById('qty-' + idx);
-                    const qty = parseInt(qtyInput.value) || 1;
-                    const sum = qty * service.price;
-                    extra += sum;
-                    selectedList.push(`${service.name} — ${qty} шт × ${service.price} = ${sum} руб`);
+                    const qty = parseInt(document.getElementById('qty-' + idx).value) || 1;
+                    sum = qty * service.price;
+                    text = `${service.name} — ${qty} шт × ${service.price} = ${sum} руб`;
                 } else {
-                    extra += service.price;
-                    selectedList.push(`${service.name} — ${service.price} руб`);
+                    sum = service.price;
+                    text = `${service.name} — ${service.price} руб`;
+                }
+
+                if (sum > 0) {
+                    extra += sum;
+                    selectedList.push(text);
+                    perCategory[service.category] = (perCategory[service.category] || 0) + 1;
                 }
             });
 
             let km = parseInt(document.getElementById('km').value) || 0;
             if (km < 0) km = 0;
-            const travel = Math.max(0, km - 10) * 40;
+            const travel = Math.max(0, km - FREE_KM) * KM_PRICE;
 
             const total = assembly + extra + travel;
 
             document.getElementById('total').textContent = total.toLocaleString('ru-RU') + ' руб';
+            document.getElementById('selectedBadge').textContent = 'Выбрано услуг: ' + selectedList.length;
+
+            // Обновляем счётчики категорий
+            categories.forEach((cat, catIdx) => {
+                const count = perCategory[cat.title] || 0;
+                document.getElementById('catcount-' + catIdx).textContent = count;
+                document.getElementById('catcount-' + catIdx).style.background = count ? '#34c759' : '#ccc';
+            });
 
             let detailsHTML = `
-                <div class="line"><span>Сборка (12% от стоимости мебели):</span> <b>${assembly.toLocaleString('ru-RU')} руб</b></div>
+                <div class="line"><span>Сборка (12%):</span> <b>${assembly.toLocaleString('ru-RU')} руб</b></div>
             `;
             if (selectedList.length) {
-                detailsHTML += `<div style="margin-top:10px; font-weight:600; color:#333;">Доп. работы:</div>`;
+                detailsHTML += `<div style="margin-top:8px; font-weight:600; color:#333;">Доп. работы:</div>`;
                 selectedList.forEach(item => {
                     detailsHTML += `<div class="line selected"><span>• ${item}</span></div>`;
                 });
@@ -565,15 +672,19 @@
                 detailsHTML += `<div class="line"><span>Доп. работы:</span> <b>0 руб</b></div>`;
             }
             detailsHTML += `
-                <div class="line" style="margin-top:8px;"><span>Выезд (${km} км от ЕКАД):</span> <b>${travel.toLocaleString('ru-RU')} руб</b></div>
+                <div class="line" style="margin-top:6px;"><span>Выезд (${km} км от ЕКАД):</span> <b>${travel.toLocaleString('ru-RU')} руб</b></div>
             `;
-
             document.getElementById('details').innerHTML = detailsHTML;
             document.getElementById('result').style.display = 'block';
 
-            // Обновляем дату для печати
-            document.getElementById('printDate').textContent =
-                'Дата расчёта: ' + new Date().toLocaleString('ru-RU');
+            // Мета для печати
+            const name = document.getElementById('clientName').value.trim();
+            const addr = document.getElementById('clientAddress').value.trim();
+            const metaParts = [];
+            if (name) metaParts.push('Клиент: ' + name);
+            if (addr) metaParts.push('Адрес: ' + addr);
+            metaParts.push('Дата: ' + new Date().toLocaleString('ru-RU'));
+            document.getElementById('printMeta').innerHTML = metaParts.join('<br>');
         }
 
         // ПЕЧАТЬ
@@ -582,19 +693,39 @@
             window.print();
         }
 
+        // WHATSAPP
+        function shareResult() {
+            calculate();
+            const name = document.getElementById('clientName').value.trim();
+            const addr = document.getElementById('clientAddress').value.trim();
+            const total = document.getElementById('total').textContent;
+            const details = document.getElementById('details').innerText;
+
+            let text = '🪛 Расчёт сборки мебели\n';
+            if (name) text += 'Клиент: ' + name + '\n';
+            if (addr) text += 'Адрес: ' + addr + '\n';
+            text += '\n' + details + '\n\nИТОГО: ' + total;
+            window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+        }
+
         // СБРОС
         function resetAll() {
+            if (!confirm('Сбросить всё? Черновик будет удалён.')) return;
             document.getElementById('price').value = 50000;
             document.getElementById('km').value = 0;
             document.getElementById('search').value = '';
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientAddress').value = '';
             document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
             document.querySelectorAll('.meter-input').forEach(inp => inp.value = '');
             document.querySelectorAll('.qty-input').forEach(inp => inp.value = '1');
             document.querySelectorAll('[id^="price-"]').forEach(el => {
-                if (el.id !== 'price') el.textContent = '0 руб';
+                if (!el.id.startsWith('price') || el.id === 'price') return;
+                if (el.classList.contains('service-price')) el.textContent = '0 руб';
             });
             document.querySelectorAll('.service-item').forEach(i => i.style.display = 'flex');
             document.getElementById('result').style.display = 'none';
+            localStorage.removeItem('calcDraft');
         }
 
         // ПОИСК
@@ -604,15 +735,77 @@
                 const name = item.querySelector('.service-name').textContent.toLowerCase();
                 item.style.display = name.includes(q) ? 'flex' : 'none';
             });
+            // Автораскрытие категорий при поиске
+            if (q) {
+                document.querySelectorAll('.category').forEach(c => c.classList.remove('collapsed'));
+            }
+        }
+
+        // ЧЕРНОВИК
+        function saveDraft() {
+            const draft = {
+                clientName: document.getElementById('clientName').value,
+                clientAddress: document.getElementById('clientAddress').value,
+                price: document.getElementById('price').value,
+                km: document.getElementById('km').value,
+                checked: [], meters: {}, qtys: {}
+            };
+            document.querySelectorAll('.checkbox.checked').forEach(cb => {
+                const idx = cb.id.replace('cb-', '');
+                draft.checked.push(idx);
+                if (allServices[idx].meter) {
+                    draft.meters[idx] = document.getElementById('meter-' + idx).value;
+                }
+                if (allServices[idx].qty) {
+                    draft.qtys[idx] = document.getElementById('qty-' + idx).value;
+                }
+            });
+            localStorage.setItem('calcDraft', JSON.stringify(draft));
+        }
+
+        function restoreDraft() {
+            const raw = localStorage.getItem('calcDraft');
+            if (!raw) return;
+            try {
+                const d = JSON.parse(raw);
+                if (d.clientName) document.getElementById('clientName').value = d.clientName;
+                if (d.clientAddress) document.getElementById('clientAddress').value = d.clientAddress;
+                if (d.price) document.getElementById('price').value = d.price;
+                if (d.km) document.getElementById('km').value = d.km;
+                if (d.meters) {
+                    Object.keys(d.meters).forEach(idx => {
+                        const inp = document.getElementById('meter-' + idx);
+                        if (inp) {
+                            inp.value = d.meters[idx];
+                            updateMeterPrice(parseInt(idx));
+                        }
+                    });
+                }
+                if (d.qtys) {
+                    Object.keys(d.qtys).forEach(idx => {
+                        const inp = document.getElementById('qty-' + idx);
+                        if (inp) {
+                            inp.value = d.qtys[idx];
+                            updateQtyPrice(parseInt(idx));
+                        }
+                    });
+                }
+                if (d.checked) {
+                    d.checked.forEach(idx => {
+                        const cb = document.getElementById('cb-' + idx);
+                        if (cb) cb.classList.add('checked');
+                    });
+                }
+                calculate();
+            } catch (e) {
+                console.warn('Не удалось восстановить черновик', e);
+            }
         }
 
         // ИСТОРИЯ
         function saveToHistory(total) {
             let history = JSON.parse(localStorage.getItem('calcHistory') || '[]');
-            history.unshift({
-                date: new Date().toLocaleString('ru-RU'),
-                total: total
-            });
+            history.unshift({ date: new Date().toLocaleString('ru-RU'), total: total });
             if (history.length > 20) history = history.slice(0, 20);
             localStorage.setItem('calcHistory', JSON.stringify(history));
         }
@@ -621,7 +814,7 @@
             const list = document.getElementById('historyList');
             const history = JSON.parse(localStorage.getItem('calcHistory') || '[]');
             if (!history.length) {
-                list.innerHTML = '<p style="color:#999; text-align:center; padding:20px 0;">История пуста</p>';
+                list.innerHTML = '<p style="color:#999; text-align:center; padding:15px 0;">История пуста</p>';
             } else {
                 list.innerHTML = history.map(h => `
                     <div class="history-item">
@@ -637,17 +830,22 @@
             document.getElementById('historyModal').classList.remove('open');
         }
 
-        // РАСЧЕТ + СОХРАНЕНИЕ
+        function clearHistory() {
+            if (!confirm('Очистить всю историю?')) return;
+            localStorage.removeItem('calcHistory');
+            openHistory();
+        }
+
         function calculateAndSave() {
             calculate();
-            const totalText = document.getElementById('total').textContent;
-            const total = parseInt(totalText.replace(/\D/g, '')) || 0;
+            const total = parseInt(document.getElementById('total').textContent.replace(/\D/g, '')) || 0;
             saveToHistory(total);
         }
 
         // ОБРАБОТЧИКИ
-        document.getElementById('price').addEventListener('input', calculate);
-        document.getElementById('km').addEventListener('input', calculate);
+        ['price', 'km', 'clientName', 'clientAddress'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => { calculate(); saveDraft(); });
+        });
         document.getElementById('search').addEventListener('input', filterServices);
 
         // ИНИЦИАЛИЗАЦИЯ
