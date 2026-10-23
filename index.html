@@ -11,6 +11,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -65,15 +66,8 @@
             border-radius: 12px;
             font-size: 16px;
         }
-        .input-group input:focus {
-            outline: none;
-            border-color: #007aff;
-        }
-        .hint {
-            font-size: 12px;
-            color: #999;
-            margin-top: 4px;
-        }
+        .input-group input:focus { outline: none; border-color: #007aff; }
+        .hint { font-size: 12px; color: #999; margin-top: 4px; }
         .services {
             margin: 20px 0;
             max-height: 420px;
@@ -142,12 +136,7 @@
             transition: background 0.2s;
         }
         .checkbox.checked { background: #007aff; }
-        .checkbox.checked::after {
-            content: "✓";
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-        }
+        .checkbox.checked::after { content: "✓"; color: white; font-weight: bold; font-size: 14px; }
         button.main-btn {
             width: 100%;
             padding: 16px;
@@ -217,11 +206,7 @@
             padding-top: 12px;
             border-top: 1px solid #e0e0e0;
         }
-        .details .line {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-        }
+        .details .line { display: flex; justify-content: space-between; padding: 3px 0; }
         .details .line.selected { color: #007aff; }
         .print-header {
             display: none;
@@ -276,6 +261,26 @@
         .btn-close { background: #007aff; color: white; }
         .btn-clear { background: #ff3b30; color: white; }
 
+        /* Шаблон для PDF (невидимый на экране, но рендерится для PDF) */
+        #pdfTemplate {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 595px;
+            background: white;
+            padding: 40px;
+            font-family: Arial, sans-serif;
+            color: #000;
+        }
+        #pdfTemplate h1 { color: #007aff; font-size: 22px; margin-bottom: 4px; text-align: center; }
+        #pdfTemplate .pdf-sub { text-align: center; color: #666; font-size: 12px; margin-bottom: 20px; border-bottom: 2px solid #007aff; padding-bottom: 12px; }
+        #pdfTemplate .pdf-meta { font-size: 12px; line-height: 1.6; margin-bottom: 15px; }
+        #pdfTemplate .pdf-total-label { font-size: 14px; color: #333; margin-top: 15px; }
+        #pdfTemplate .pdf-total { font-size: 28px; font-weight: bold; color: #000; margin-bottom: 15px; }
+        #pdfTemplate .pdf-section { font-size: 14px; font-weight: bold; margin-top: 15px; margin-bottom: 8px; color: #333; border-top: 1px solid #ccc; padding-top: 10px; }
+        #pdfTemplate .pdf-line { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+        #pdfTemplate .pdf-line span:last-child { font-weight: bold; }
+
         @media print {
             body { background: white; padding: 0; }
             .app { max-width: 100%; box-shadow: none; border-radius: 0; }
@@ -284,13 +289,7 @@
                 display: none !important;
             }
             .content { padding: 0; }
-            .result {
-                display: block !important;
-                background: white;
-                padding: 0;
-                border-radius: 0;
-                margin-top: 0;
-            }
+            .result { display: block !important; background: white; padding: 0; border-radius: 0; margin-top: 0; }
             .print-header { display: block; }
             .total { font-size: 32px; color: #000; }
             .details { color: #000; border-top: 1px solid #999; }
@@ -310,32 +309,25 @@
                 <label>Имя клиента (необязательно)</label>
                 <input type="text" id="clientName" placeholder="Иванов Иван">
             </div>
-
             <div class="input-group">
                 <label>Адрес (необязательно)</label>
                 <input type="text" id="clientAddress" placeholder="ул. Ленина, 10, кв. 5">
             </div>
-
             <div class="input-group">
                 <label>Стоимость мебели (руб)</label>
                 <input type="number" id="price" placeholder="50000" value="50000" min="0" step="1000">
             </div>
-
             <div class="input-group">
                 <input type="text" id="search" placeholder="🔍 Поиск услуги...">
             </div>
-
             <div class="services" id="services"></div>
-
             <div class="input-group">
                 <label>Выезд (км от ЕКАД)</label>
                 <input type="number" id="km" placeholder="0" value="0" min="0">
                 <div class="hint">Бесплатно до 10 км, далее 40 ₽/км</div>
             </div>
-
             <button class="main-btn" onclick="calculateAndSave()">РАССЧИТАТЬ</button>
             <button class="reset-btn" onclick="resetAll()">СБРОСИТЬ ВСЁ</button>
-
             <div class="result" id="result" style="display: none;">
                 <div class="print-header">
                     <h2>🪛 Калькулятор сборки</h2>
@@ -362,14 +354,15 @@
         </div>
     </div>
 
+    <!-- Шаблон для PDF (невидим на экране) -->
+    <div id="pdfTemplate"></div>
+
     <script>
-        // НАСТРОЙКИ
         const ASSEMBLY_PERCENT = 0.12;
         const MIN_ASSEMBLY = 3000;
         const FREE_KM = 10;
         const KM_PRICE = 40;
 
-        // СПИСОК УСЛУГ С КАТЕГОРИЯМИ
         const categories = [
             { title: "Мойка", services: [
                 {name: "Вырез под мойку в столешнице", price: 1500, qty: true},
@@ -618,115 +611,67 @@
             const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
             if (isMobile) {
-                // На телефоне генерируем PDF и скачиваем
-                try {
-                    downloadPDF(data);
-                } catch (e) {
-                    console.error('PDF error:', e);
-                    alert('Не удалось создать PDF. Используйте кнопку WhatsApp или меню браузера → Печать.');
-                }
+                downloadPDF(data);
             } else {
                 window.print();
             }
         }
 
-        // Генерация PDF вручную (валидный PDF 1.4 с текстом, кириллица через Windows-1251)
         function downloadPDF(data) {
             const { total, assembly, extra, travel, selectedList, km, name, addr } = data;
+
+            // Заполняем шаблон
             const dateStr = new Date().toLocaleString('ru-RU');
+            let metaHTML = '';
+            if (name) metaHTML += 'Клиент: ' + name + '<br>';
+            if (addr) metaHTML += 'Адрес: ' + addr + '<br>';
+            metaHTML += 'Дата: ' + dateStr;
 
-            // Собираем строки для PDF
-            const lines = [];
-            lines.push({ text: 'КАЛЬКУЛЯТОР СБОРКИ', size: 16, bold: true });
-            lines.push({ text: '', size: 10 });
-            if (name) lines.push({ text: 'Клиент: ' + name, size: 10 });
-            if (addr) lines.push({ text: 'Адрес: ' + addr, size: 10 });
-            lines.push({ text: 'Дата: ' + dateStr, size: 10 });
-            lines.push({ text: '', size: 10 });
-            lines.push({ text: 'ИТОГО: ' + total.toLocaleString('ru-RU') + ' руб', size: 14, bold: true });
-            lines.push({ text: '', size: 10 });
-            lines.push({ text: 'Сборка (12%): ' + assembly.toLocaleString('ru-RU') + ' руб', size: 10 });
-            lines.push({ text: 'Доп. работы: ' + extra.toLocaleString('ru-RU') + ' руб', size: 10 });
-            lines.push({ text: 'Выезд (' + km + ' км от ЕКАД): ' + travel.toLocaleString('ru-RU') + ' руб', size: 10 });
-            lines.push({ text: '', size: 10 });
+            let servicesHTML = '';
             if (selectedList.length) {
-                lines.push({ text: 'ДОПОЛНИТЕЛЬНЫЕ РАБОТЫ:', size: 11, bold: true });
+                servicesHTML += '<div class="pdf-section">Дополнительные работы:</div>';
                 selectedList.forEach(item => {
-                    lines.push({ text: '• ' + item, size: 9 });
+                    // Разбиваем "Название — N шт × цена = сумма руб" на две колонки
+                    const parts = item.split(' — ');
+                    if (parts.length === 2) {
+                        servicesHTML += `<div class="pdf-line"><span>• ${parts[0]}</span><span>${parts[1]}</span></div>`;
+                    } else {
+                        servicesHTML += `<div class="pdf-line"><span>• ${item}</span><span></span></div>`;
+                    }
                 });
+            } else {
+                servicesHTML += '<div class="pdf-section">Дополнительные работы:</div><div class="pdf-line"><span>Не выбраны</span><span>0 руб</span></div>';
             }
 
-            // Экранируем и кодируем в Windows-1251 (PDF-шрифт Helvetica не поддерживает UTF-8 напрямую)
-            function toWin1251(str) {
-                const map = {
-                    'А':'À','Б':'Á','В':'Â','Г':'Ã','Д':'Ä','Е':'Å','Ё':'¨','Ж':'Æ','З':'Ç','И':'È','Й':'É','К':'Ê','Л':'Ë','М':'Ì','Н':'Í','О':'Î','П':'Ï','Р':'Ð','С':'Ñ','Т':'Ò','У':'Ó','Ф':'Ô','Х':'Õ','Ц':'Ö','Ч':'×','Ш':'Ø','Щ':'Ù','Ъ':'Ú','Ы':'Û','Ь':'Ü','Э':'Ý','Ю':'Þ','Я':'ß',
-                    'а':'à','б':'á','в':'â','г':'ã','д':'ä','е':'å','ё':'¸','ж':'æ','з':'ç','и':'è','й':'é','к':'ê','л':'ë','м':'ì','н':'í','о':'î','п':'ï','р':'ð','с':'ñ','т':'ò','у':'ó','ф':'ô','х':'õ','ц':'ö','ч':'÷','ш':'ø','щ':'ù','ъ':'ú','ы':'û','ь':'ü','э':'ý','ю':'þ','я':'ÿ',
-                    '—':'-','–':'-','«':'"','»':'"','₽':'руб','№':'N'
-                };
-                let result = '';
-                for (let i = 0; i < str.length; i++) {
-                    const ch = str[i];
-                    if (map[ch]) result += map[ch];
-                    else if (ch.charCodeAt(0) < 256) result += ch;
-                    else result += '?';
-                }
-                return result;
-            }
-            function escapePDF(str) {
-                return str.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
-            }
+            document.getElementById('pdfTemplate').innerHTML = `
+                <h1>КАЛЬКУЛЯТОР СБОРКИ</h1>
+                <div class="pdf-sub">Расчёт стоимости сборки мебели</div>
+                <div class="pdf-meta">${metaHTML}</div>
+                <div class="pdf-total-label">ИТОГО К ОПЛАТЕ:</div>
+                <div class="pdf-total">${total.toLocaleString('ru-RU')} руб</div>
+                <div class="pdf-section">Состав расчёта:</div>
+                <div class="pdf-line"><span>Сборка (12% от стоимости мебели):</span><span>${assembly.toLocaleString('ru-RU')} руб</span></div>
+                <div class="pdf-line"><span>Доп. работы:</span><span>${extra.toLocaleString('ru-RU')} руб</span></div>
+                <div class="pdf-line"><span>Выезд (${km} км от ЕКАД):</span><span>${travel.toLocaleString('ru-RU')} руб</span></div>
+                ${servicesHTML}
+            `;
 
-            // Формируем контент страницы
-            let content = 'BT\n';
-            let y = 800;
-            lines.forEach(line => {
-                if (!line.text) { y -= 8; return; }
-                const font = line.bold ? '/F2' : '/F1';
-                const size = line.size || 10;
-                const txt = escapePDF(toWin1251(line.text));
-                content += `${font} ${size} Tf\n1 0 0 1 50 ${y} Tm\n(${txt}) Tj\n`;
-                y -= size + 5;
+            // Генерируем PDF через html2pdf
+            const element = document.getElementById('pdfTemplate');
+            const opt = {
+                margin: 0,
+                filename: 'raschet-sborki-' + Date.now() + '.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                console.log('PDF сохранён');
+            }).catch(err => {
+                console.error('PDF error:', err);
+                alert('Не удалось создать PDF. Используйте меню браузера → Печать.');
             });
-            content += 'ET\n';
-
-            // Объекты PDF
-            const objects = [];
-            objects.push('<< /Type /Catalog /Pages 2 0 R >>');
-            objects.push('<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
-            objects.push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>');
-            objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
-            objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
-            objects.push(`<< /Length ${content.length} >>\nstream\n${content}endstream`);
-
-            // Собираем PDF
-            let pdf = '%PDF-1.4\n';
-            const offsets = [0];
-            objects.forEach((obj, i) => {
-                offsets.push(pdf.length);
-                pdf += `${i + 1} 0 obj\n${obj}\nendobj\n`;
-            });
-            const xrefPos = pdf.length;
-            pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-            for (let i = 1; i <= objects.length; i++) {
-                pdf += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
-            }
-            pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF`;
-
-            // Скачиваем как Blob (используем latin1 для бинарной корректности)
-            const blob = new Blob([pdf], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'raschet-sborki-' + Date.now() + '.pdf';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 5000);
-
-            // Подсказка пользователю
-            setTimeout(() => {
-                alert('PDF сохранён в загрузки.\n\nОткройте файл через уведомление о загрузке или в папке «Загрузки».');
-            }, 500);
         }
 
         function shareResult() {
