@@ -11,7 +11,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <script src="./html2pdf.bundle.min.js"></script>
+    <!-- Подключаем jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -261,26 +262,6 @@
         .btn-close { background: #007aff; color: white; }
         .btn-clear { background: #ff3b30; color: white; }
 
-        /* Шаблон для PDF (невидим на экране, рендерится для PDF) */
-        #pdfTemplate {
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: 595px;
-            background: white;
-            padding: 40px;
-            font-family: Arial, sans-serif;
-            color: #000;
-        }
-        #pdfTemplate h1 { color: #007aff; font-size: 22px; margin-bottom: 4px; text-align: center; }
-        #pdfTemplate .pdf-sub { text-align: center; color: #666; font-size: 12px; margin-bottom: 20px; border-bottom: 2px solid #007aff; padding-bottom: 12px; }
-        #pdfTemplate .pdf-meta { font-size: 12px; line-height: 1.6; margin-bottom: 15px; }
-        #pdfTemplate .pdf-total-label { font-size: 14px; color: #333; margin-top: 15px; }
-        #pdfTemplate .pdf-total { font-size: 28px; font-weight: bold; color: #000; margin-bottom: 15px; }
-        #pdfTemplate .pdf-section { font-size: 14px; font-weight: bold; margin-top: 15px; margin-bottom: 8px; color: #333; border-top: 1px solid #ccc; padding-top: 10px; }
-        #pdfTemplate .pdf-line { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
-        #pdfTemplate .pdf-line span:last-child { font-weight: bold; }
-
         @media print {
             body { background: white; padding: 0; }
             .app { max-width: 100%; box-shadow: none; border-radius: 0; }
@@ -353,9 +334,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Шаблон для PDF (невидим на экране) -->
-    <div id="pdfTemplate"></div>
 
     <script>
         const ASSEMBLY_PERCENT = 0.12;
@@ -614,58 +592,96 @@
             }
         }
 
-        function downloadPDF(data) {
+        // --- ГЕНЕРАЦИЯ PDF С КИРИЛЛИЦЕЙ ЧЕРЕЗ JSPDF ---
+        async function downloadPDF(data) {
             const { total, assembly, extra, travel, selectedList, km, name, addr } = data;
+            
+            // Показываем загрузку, если нужно (по желанию)
+            const btn = document.querySelector('.print-btn');
+            const oldText = btn.textContent;
+            btn.textContent = '⏳ Генерация...';
+            btn.disabled = true;
 
-            const dateStr = new Date().toLocaleString('ru-RU');
-            let metaHTML = '';
-            if (name) metaHTML += 'Клиент: ' + name + '<br>';
-            if (addr) metaHTML += 'Адрес: ' + addr + '<br>';
-            metaHTML += 'Дата: ' + dateStr;
+            try {
+                // Загружаем шрифт Roboto для поддержки кириллицы
+                const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
+                const response = await fetch(fontUrl);
+                const fontBuffer = await response.arrayBuffer();
+                
+                // Конвертируем в Base64
+                let binary = '';
+                const bytes = new Uint8Array(fontBuffer);
+                const len = bytes.byteLength;
+                for (let i = 0; i < len; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                const fontBase64 = window.btoa(binary);
 
-            let servicesHTML = '';
-            if (selectedList.length) {
-                servicesHTML += '<div class="pdf-section">Дополнительные работы:</div>';
-                selectedList.forEach(item => {
-                    const parts = item.split(' — ');
-                    if (parts.length === 2) {
-                        servicesHTML += `<div class="pdf-line"><span>• ${parts[0]}</span><span>${parts[1]}</span></div>`;
-                    } else {
-                        servicesHTML += `<div class="pdf-line"><span>• ${item}</span><span></span></div>`;
-                    }
-                });
-            } else {
-                servicesHTML += '<div class="pdf-section">Дополнительные работы:</div><div class="pdf-line"><span>Не выбраны</span><span>0 руб</span></div>';
+                // Инициализируем jsPDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Регистрируем шрифт
+                doc.addFileToVFS('Roboto-Regular.ttf', fontBase64);
+                doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+                doc.setFont('Roboto');
+
+                // Заголовок
+                doc.setFontSize(18);
+                doc.setTextColor(0, 122, 255);
+                doc.text('КАЛЬКУЛЯТОР СБОРКИ', 105, 20, { align: 'center' });
+
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                let y = 30;
+                
+                if (name) { doc.text('Клиент: ' + name, 14, y); y += 6; }
+                if (addr) { doc.text('Адрес: ' + addr, 14, y); y += 6; }
+                doc.text('Дата: ' + new Date().toLocaleString('ru-RU'), 14, y);
+                y += 10;
+
+                // Итого
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text('ИТОГО К ОПЛАТЕ:', 14, y);
+                doc.setFontSize(18);
+                doc.setFont('Roboto', 'bold'); // bold нет, но jsPDF его сымитирует
+                doc.text(total.toLocaleString('ru-RU') + ' руб', 14, y + 8);
+                doc.setFont('Roboto', 'normal');
+                y += 20;
+
+                // Состав
+                doc.setFontSize(11);
+                doc.text('Состав расчёта:', 14, y);
+                y += 6;
+                doc.setFontSize(10);
+                doc.text('Сборка (12%): ' + assembly.toLocaleString('ru-RU') + ' руб', 14, y); y += 6;
+                doc.text('Доп. работы: ' + extra.toLocaleString('ru-RU') + ' руб', 14, y); y += 6;
+                doc.text('Выезд (' + km + ' км от ЕКАД): ' + travel.toLocaleString('ru-RU') + ' руб', 14, y); y += 10;
+
+                // Список услуг
+                if (selectedList.length) {
+                    doc.text('Дополнительные работы:', 14, y);
+                    y += 6;
+                    selectedList.forEach(item => {
+                        // Разбиваем на строки, если длинно
+                        const lines = doc.splitTextToSize('• ' + item, 180);
+                        doc.text(lines, 14, y);
+                        y += (lines.length * 5);
+                    });
+                } else {
+                    doc.text('Дополнительные работы: не выбраны', 14, y);
+                }
+
+                // Сохраняем
+                doc.save('raschet-sborki-' + Date.now() + '.pdf');
+            } catch (err) {
+                console.error('PDF Error:', err);
+                alert('Ошибка при создании PDF. Проверьте интернет или попробуйте ещё раз.');
+            } finally {
+                btn.textContent = oldText;
+                btn.disabled = false;
             }
-
-            document.getElementById('pdfTemplate').innerHTML = `
-                <h1>КАЛЬКУЛЯТОР СБОРКИ</h1>
-                <div class="pdf-sub">Расчёт стоимости сборки мебели</div>
-                <div class="pdf-meta">${metaHTML}</div>
-                <div class="pdf-total-label">ИТОГО К ОПЛАТЕ:</div>
-                <div class="pdf-total">${total.toLocaleString('ru-RU')} руб</div>
-                <div class="pdf-section">Состав расчёта:</div>
-                <div class="pdf-line"><span>Сборка (12% от стоимости мебели):</span><span>${assembly.toLocaleString('ru-RU')} руб</span></div>
-                <div class="pdf-line"><span>Доп. работы:</span><span>${extra.toLocaleString('ru-RU')} руб</span></div>
-                <div class="pdf-line"><span>Выезд (${km} км от ЕКАД):</span><span>${travel.toLocaleString('ru-RU')} руб</span></div>
-                ${servicesHTML}
-            `;
-
-            const element = document.getElementById('pdfTemplate');
-            const opt = {
-                margin: 0,
-                filename: 'raschet-sborki-' + Date.now() + '.pdf',
-                image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                console.log('PDF сохранён');
-            }).catch(err => {
-                console.error('PDF error:', err);
-                alert('Не удалось создать PDF. Используйте меню браузера → Печать.');
-            });
         }
 
         function shareResult() {
