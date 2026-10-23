@@ -4,7 +4,8 @@ const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './icon.png'
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Установка — кэшируем файлы
@@ -12,7 +13,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(ASSETS);
-    }).then(() => self.skipWaiting()) // активируемся сразу
+    }).then(() => self.skipWaiting())
   );
 });
 
@@ -24,7 +25,7 @@ self.addEventListener('activate', event => {
         keys.filter(key => key !== CACHE_NAME)
             .map(key => caches.delete(key))
       );
-    }).then(() => self.clients.claim()) // берём контроль над всеми вкладками
+    }).then(() => self.clients.claim())
   );
 });
 
@@ -35,7 +36,6 @@ self.addEventListener('fetch', event => {
       if (response) return response;
 
       return fetch(event.request).then(networkResponse => {
-        // Кэшируем только GET-запросы с успешным ответом
         if (event.request.method === 'GET' && networkResponse.ok) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
@@ -45,7 +45,6 @@ self.addEventListener('fetch', event => {
         return networkResponse;
       });
     }).catch(() => {
-      // Если офлайн и нет в кэше — возвращаем index.html
       return caches.match('./index.html');
     })
   );
