@@ -11,8 +11,8 @@
     <link rel="icon" href="icon.png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -30,17 +30,25 @@
             color: white;
             padding: 25px;
             text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .header h1 {
-            font-size: 24px;
+        .header h1 { font-size: 20px; margin: 0; }
+        .header button {
+            width: auto;
+            padding: 8px 12px;
+            font-size: 14px;
             margin: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
         }
-        .content {
-            padding: 20px;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
+        .content { padding: 20px; }
+        .input-group { margin-bottom: 20px; }
         .input-group label {
             display: block;
             margin-bottom: 8px;
@@ -54,10 +62,16 @@
             border-radius: 12px;
             font-size: 18px;
         }
+        .input-group input:focus {
+            outline: none;
+            border-color: #007aff;
+        }
         .services {
             margin: 20px 0;
             max-height: 400px;
             overflow-y: auto;
+            border: 1px solid #f0f0f0;
+            border-radius: 12px;
         }
         .service-item {
             display: flex;
@@ -65,22 +79,22 @@
             align-items: center;
             padding: 15px;
             border-bottom: 1px solid #f0f0f0;
+            gap: 10px;
         }
-        .service-item:last-child {
-            border-bottom: none;
-        }
+        .service-item:last-child { border-bottom: none; }
         .service-name {
             flex: 1;
             font-size: 14px;
+            line-height: 1.4;
         }
         .service-price {
             font-weight: bold;
-            margin: 0 10px;
-            min-width: 80px;
+            min-width: 70px;
             text-align: right;
+            font-size: 14px;
         }
         .meter-input {
-            width: 70px !important;
+            width: 65px !important;
             padding: 8px !important;
             font-size: 16px !important;
             text-align: center;
@@ -95,26 +109,37 @@
             justify-content: center;
             cursor: pointer;
             flex-shrink: 0;
+            transition: background 0.2s;
         }
-        .checkbox.checked {
-            background: #007aff;
-        }
+        .checkbox.checked { background: #007aff; }
         .checkbox.checked::after {
             content: "✓";
             color: white;
             font-weight: bold;
         }
-        button {
+        button.main-btn {
             width: 100%;
-            padding: 20px;
+            padding: 18px;
             background: linear-gradient(to right, #34c759, #2dbd58);
             color: white;
             border: none;
             border-radius: 15px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            margin: 20px 0;
+            margin: 15px 0;
+        }
+        button.reset-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
         }
         .result {
             background: #f8f9fa;
@@ -131,8 +156,61 @@
         }
         .details {
             color: #666;
-            font-size: 16px;
+            font-size: 14px;
             line-height: 1.6;
+            text-align: left;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .details .line {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+        .details .line.selected { color: #007aff; }
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 100;
+        }
+        .modal.open { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-content h2 { margin-bottom: 15px; color: #333; }
+        .history-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-item .date { color: #999; font-size: 12px; }
+        .history-item .sum { font-weight: bold; color: #007aff; }
+        .close-modal {
+            width: 100%;
+            padding: 12px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -140,28 +218,29 @@
     <div class="app">
         <div class="header">
             <h1>🪛 Калькулятор сборки</h1>
+            <button onclick="openHistory()">История</button>
         </div>
-        
+
         <div class="content">
             <div class="input-group">
                 <label>Стоимость мебели (руб)</label>
-                <input type="number" id="price" placeholder="50000" value="50000">
+                <input type="number" id="price" placeholder="50000" value="50000" min="0" step="1000">
             </div>
-            
-            <!-- ПОИСК -->
+
             <div class="input-group">
-                <input type="text" id="search" placeholder="🔍 Поиск услуги..." oninput="filterServices()">
+                <input type="text" id="search" placeholder="🔍 Поиск услуги...">
             </div>
-            
+
             <div class="services" id="services"></div>
-            
+
             <div class="input-group">
                 <label>Выезд (км от МКАД)</label>
-                <input type="number" id="km" placeholder="0" value="0">
+                <input type="number" id="km" placeholder="0" value="0" min="0">
             </div>
-            
-            <button onclick="calculate()">РАССЧИТАТЬ</button>
-            
+
+            <button class="main-btn" onclick="calculateAndSave()">РАССЧИТАТЬ</button>
+            <button class="reset-btn" onclick="resetAll()">СБРОСИТЬ ВСЁ</button>
+
             <div class="result" id="result" style="display: none;">
                 <div>ИТОГО К ОПЛАТЕ</div>
                 <div class="total" id="total">0 руб</div>
@@ -170,15 +249,24 @@
         </div>
     </div>
 
+    <!-- Модальное окно истории -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <h2>История расчетов</h2>
+            <div id="historyList"></div>
+            <button class="close-modal" onclick="closeHistory()">Закрыть</button>
+        </div>
+    </div>
+
     <script>
-        // ПОЛНЫЙ СПИСОК УСЛУГ ИЗ ПРАЙСА
+        // ПОЛНЫЙ СПИСОК УСЛУГ
         const services = [
             // МОЙКА
             {name: "Вырез под мойку в столешнице", price: 1500},
             {name: "Монтаж нержавеющей мойки", price: 1000},
             {name: "Монтаж каменной мойки", price: 1400},
             {name: "Подключение мойки (слив/сифон)", price: 800},
-            
+
             // СМЕСИТЕЛЬ
             {name: "Монтаж смесителя с подключением", price: 1200},
             {name: "Вырез отверстия в столешнице под смеситель", price: 500},
@@ -186,31 +274,31 @@
             {name: "Вырез отверстия в каменной столешнице под воду", price: 1000},
             {name: "Монтаж ИПО с подключением", price: 4500},
             {name: "Монтаж питьевого фильтра с подключением", price: 4000},
-            
+
             // ВАРОЧНАЯ ПАНЕЛЬ
             {name: "Вырез под варочную панель в пластиковой столешнице", price: 1500},
             {name: "Вырез под варочную панель в каменной столешнице", price: 2500},
             {name: "Монтаж варочной панели (без подключения)", price: 1000},
             {name: "Подключение варочной поверхности", price: 500},
-            
+
             // ДУХОВОЙ ШКАФ
             {name: "Монтаж духового шкафа (без подключения)", price: 1000},
             {name: "Подключение духового шкафа", price: 500},
-            
+
             // СВЧ
             {name: "Монтаж СВЧ (без подключения)", price: 1500},
             {name: "Подключение СВЧ", price: 500},
-            
+
             // ВЫТЯЖКА
             {name: "Монтаж встроенной или подвесной вытяжки", price: 2000},
             {name: "Подключение вытяжки к воздуховоду", price: 1000},
             {name: "Протяжка воздуховода (гофры)", price: 700, meter: true},
-            
+
             // ТЕХНИКА
             {name: "Монтаж ПММ с подключением", price: 2500},
             {name: "Монтаж стиральной машины с подключением", price: 2500},
             {name: "Монтаж встраиваемого холодильника/холодильной камеры", price: 3500},
-            
+
             // ДОПОЛНИТЕЛЬНЫЕ РАБОТЫ
             {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350},
             {name: "Выпил под трубы в столешнице", price: 350},
@@ -225,6 +313,8 @@
             {name: "Монтаж барной трубы", price: 500},
             {name: "Выпил стеновой панели", price: 250},
             {name: "Монтаж розетки", price: 350},
+            {name: "Вырез под розетку в керамограните", price: 500},
+            {name: "Вырез под розетку в ЛДСП", price: 250},
             {name: "Выпил в стеновой панели под электрику", price: 350},
             {name: "Монтаж диодной подсветки", price: 700, meter: true},
             {name: "Подключение диодной подсветки", price: 1200},
@@ -235,42 +325,30 @@
             {name: "Выпил подоконника", price: 3000}
         ];
 
-        // ЗАГРУЗКА УСЛУГ С УЧЕТОМ МЕТРАЖА
+        // ЗАГРУЗКА УСЛУГ
         function loadServices() {
             const container = document.getElementById('services');
             container.innerHTML = '';
-            
+
             services.forEach((service, index) => {
                 const div = document.createElement('div');
                 div.className = 'service-item';
                 div.id = 'service-' + index;
-                
-                // Если услуга с метражом
+
                 if (service.meter) {
                     div.innerHTML = `
                         <div class="service-name">${service.name} (за п.м.)</div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="number" 
-                                   class="meter-input" 
-                                   id="meter-${index}" 
-                                   placeholder="м" 
-                                   min="0" 
-                                   step="0.5" 
-                                   style="width: 60px; padding: 8px;"
-                                   oninput="updateMeterPrice(${index})">
-                            <span class="service-price" id="price-${index}">0 руб</span>
-                        </div>
+                        <input type="number" class="meter-input" id="meter-${index}" placeholder="м" min="0" step="0.5" oninput="updateMeterPrice(${index})">
+                        <span class="service-price" id="price-${index}">0 руб</span>
                         <div class="checkbox" onclick="toggleService(${index})"></div>
                     `;
                 } else {
-                    // Обычная услуга
                     div.innerHTML = `
                         <div class="service-name">${service.name}</div>
                         <div class="service-price">${service.price} руб</div>
                         <div class="checkbox" onclick="toggleService(${index})"></div>
                     `;
                 }
-                
                 container.appendChild(div);
             });
         }
@@ -279,115 +357,164 @@
         function toggleService(index) {
             const checkbox = document.querySelector('#service-' + index + ' .checkbox');
             const service = services[index];
-            
             checkbox.classList.toggle('checked');
-            
-            // Если это услуга с метражом и она включена, но метраж 0
+
             if (service.meter && checkbox.classList.contains('checked')) {
                 const meterInput = document.getElementById('meter-' + index);
-                if (!meterInput.value || parseFloat(meterInput.value) === 0) {
-                    meterInput.value = '1'; // Ставим по умолчанию 1 метр
+                if (!meterInput.value || parseFloat(meterInput.value) <= 0) {
+                    meterInput.value = '1';
                     updateMeterPrice(index);
                 }
             }
-            
             calculate();
         }
 
-        // ОБНОВЛЕНИЕ ЦЕНЫ ПРИ ИЗМЕНЕНИИ МЕТРАЖА
+        // ОБНОВЛЕНИЕ ЦЕНЫ МЕТРАЖА
         function updateMeterPrice(index) {
             const service = services[index];
             const meterInput = document.getElementById('meter-' + index);
             const priceDisplay = document.getElementById('price-' + index);
-            
-            const meters = parseFloat(meterInput.value) || 0;
+
+            let meters = parseFloat(meterInput.value) || 0;
+            if (meters < 0) { meters = 0; meterInput.value = 0; }
+
             const totalPrice = meters * service.price;
-            
             priceDisplay.textContent = totalPrice + ' руб';
-            
-            // Обновляем чекбокс
+
             const checkbox = document.querySelector('#service-' + index + ' .checkbox');
-            if (meters > 0 && !checkbox.classList.contains('checked')) {
+            if (meters > 0) {
                 checkbox.classList.add('checked');
+            } else {
+                checkbox.classList.remove('checked');
             }
-            
             calculate();
         }
 
         // ОСНОВНОЙ РАСЧЕТ
         function calculate() {
-            const price = parseInt(document.getElementById('price').value) || 0;
+            let price = parseInt(document.getElementById('price').value) || 0;
+            if (price < 0) price = 0;
+
             const assembly = Math.round(price * 0.1);
-            
             let extra = 0;
-            
-            // Считаем все выбранные услуги
-            document.querySelectorAll('.checkbox.checked').forEach((cb, index) => {
-                const service = services[index];
-                
+            const selectedList = [];
+
+            // Правильный перебор с реальным индексом
+            document.querySelectorAll('.checkbox.checked').forEach((cb) => {
+                const idx = parseInt(cb.closest('.service-item').id.replace('service-', ''));
+                const service = services[idx];
+                if (!service) return;
+
                 if (service.meter) {
-                    // Для услуг с метражом
-                    const meterInput = document.getElementById('meter-' + index);
+                    const meterInput = document.getElementById('meter-' + idx);
                     const meters = parseFloat(meterInput.value) || 0;
-                    extra += meters * service.price;
+                    const sum = meters * service.price;
+                    if (sum > 0) {
+                        extra += sum;
+                        selectedList.push(`${service.name} — ${meters} м × ${service.price} = ${sum} руб`);
+                    }
                 } else {
-                    // Для обычных услуг
                     extra += service.price;
+                    selectedList.push(`${service.name} — ${service.price} руб`);
                 }
             });
-            
-            const km = parseInt(document.getElementById('km').value) || 0;
+
+            let km = parseInt(document.getElementById('km').value) || 0;
+            if (km < 0) km = 0;
             const travel = Math.max(0, km - 10) * 40;
-            
+
             const total = assembly + extra + travel;
-            
-            document.getElementById('total').textContent = total.toLocaleString() + ' руб';
-            document.getElementById('details').innerHTML = `
-                Сборка (10%): ${assembly.toLocaleString()} руб<br>
-                Доп. работы: ${extra.toLocaleString()} руб<br>
-                Выезд: ${travel.toLocaleString()} руб
+
+            document.getElementById('total').textContent = total.toLocaleString('ru-RU') + ' руб';
+
+            let detailsHTML = `
+                <div class="line"><span>Сборка (10% от стоимости мебели):</span> <b>${assembly.toLocaleString('ru-RU')} руб</b></div>
             `;
-            
+            if (selectedList.length) {
+                detailsHTML += `<div style="margin-top:10px; font-weight:600; color:#333;">Доп. работы:</div>`;
+                selectedList.forEach(item => {
+                    detailsHTML += `<div class="line selected"><span>• ${item}</span></div>`;
+                });
+            } else {
+                detailsHTML += `<div class="line"><span>Доп. работы:</span> <b>0 руб</b></div>`;
+            }
+            detailsHTML += `
+                <div class="line" style="margin-top:8px;"><span>Выезд (${km} км):</span> <b>${travel.toLocaleString('ru-RU')} руб</b></div>
+            `;
+
+            document.getElementById('details').innerHTML = detailsHTML;
             document.getElementById('result').style.display = 'block';
-            saveToHistory(total);
         }
 
-        // СОХРАНЕНИЕ В ИСТОРИЮ
+        // СБРОС
+        function resetAll() {
+            document.getElementById('price').value = 50000;
+            document.getElementById('km').value = 0;
+            document.getElementById('search').value = '';
+            document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
+            document.querySelectorAll('.meter-input').forEach(inp => inp.value = '');
+            document.querySelectorAll('[id^="price-"]').forEach(el => {
+                if (el.id !== 'price') el.textContent = '0 руб';
+            });
+            document.querySelectorAll('.service-item').forEach(i => i.style.display = 'flex');
+            document.getElementById('result').style.display = 'none';
+        }
+
+        // ПОИСК
+        function filterServices() {
+            const q = document.getElementById('search').value.toLowerCase().trim();
+            document.querySelectorAll('.service-item').forEach(item => {
+                const name = item.querySelector('.service-name').textContent.toLowerCase();
+                item.style.display = name.includes(q) ? 'flex' : 'none';
+            });
+        }
+
+        // ИСТОРИЯ
         function saveToHistory(total) {
             let history = JSON.parse(localStorage.getItem('calcHistory') || '[]');
             history.unshift({
-                date: new Date().toLocaleString(),
+                date: new Date().toLocaleString('ru-RU'),
                 total: total
             });
-            if (history.length > 10) history.pop();
+            if (history.length > 20) history = history.slice(0, 20);
             localStorage.setItem('calcHistory', JSON.stringify(history));
         }
 
-        // ПОИСК УСЛУГ
-        function filterServices() {
-            const searchText = document.getElementById('search').value.toLowerCase();
-            const serviceItems = document.querySelectorAll('.service-item');
-            
-            serviceItems.forEach(item => {
-                const serviceName = item.querySelector('.service-name').textContent.toLowerCase();
-                if (serviceName.includes(searchText)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
+        function openHistory() {
+            const list = document.getElementById('historyList');
+            const history = JSON.parse(localStorage.getItem('calcHistory') || '[]');
+            if (!history.length) {
+                list.innerHTML = '<p style="color:#999; text-align:center; padding:20px 0;">История пуста</p>';
+            } else {
+                list.innerHTML = history.map(h => `
+                    <div class="history-item">
+                        <span class="date">${h.date}</span>
+                        <span class="sum">${h.total.toLocaleString('ru-RU')} руб</span>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('historyModal').classList.add('open');
         }
 
-        // АВТОРАСЧЕТ ПРИ ИЗМЕНЕНИИ
+        function closeHistory() {
+            document.getElementById('historyModal').classList.remove('open');
+        }
+
+        // РАСЧЕТ + СОХРАНЕНИЕ
+        function calculateAndSave() {
+            calculate();
+            const totalText = document.getElementById('total').textContent;
+            const total = parseInt(totalText.replace(/\D/g, '')) || 0;
+            saveToHistory(total);
+        }
+
+        // ОБРАБОТЧИКИ
         document.getElementById('price').addEventListener('input', calculate);
         document.getElementById('km').addEventListener('input', calculate);
-        
+        document.getElementById('search').addEventListener('input', filterServices);
+
         // ИНИЦИАЛИЗАЦИЯ
         loadServices();
-        
-        // ДОБАВЛЯЕМ ОБРАБОТЧИК ПОИСКА
-        document.getElementById('search').addEventListener('input', filterServices);
     </script>
 </body>
 </html>
-
