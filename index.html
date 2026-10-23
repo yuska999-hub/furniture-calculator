@@ -147,6 +147,18 @@
             cursor: pointer;
             margin-bottom: 15px;
         }
+        button.print-btn {
+            width: 100%;
+            padding: 14px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
         .result {
             background: #f8f9fa;
             padding: 25px;
@@ -175,6 +187,22 @@
             padding: 4px 0;
         }
         .details .line.selected { color: #007aff; }
+        .print-header {
+            display: none;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #007aff;
+        }
+        .print-header h2 {
+            color: #007aff;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        .print-header .date {
+            color: #666;
+            font-size: 13px;
+        }
         .modal {
             position: fixed;
             inset: 0;
@@ -218,6 +246,52 @@
             cursor: pointer;
             margin-top: 15px;
         }
+
+        /* СТИЛИ ДЛЯ ПЕЧАТИ */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .app {
+                max-width: 100%;
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .header,
+            .input-group,
+            .services,
+            .main-btn,
+            .reset-btn,
+            .print-btn,
+            .modal {
+                display: none !important;
+            }
+            .content {
+                padding: 0;
+            }
+            .result {
+                display: block !important;
+                background: white;
+                padding: 0;
+                border-radius: 0;
+                margin-top: 0;
+            }
+            .print-header {
+                display: block;
+            }
+            .total {
+                font-size: 36px;
+                color: #000;
+            }
+            .details {
+                color: #000;
+                border-top: 1px solid #999;
+            }
+            .details .line.selected {
+                color: #000;
+            }
+        }
     </style>
 </head>
 <body>
@@ -248,9 +322,14 @@
             <button class="reset-btn" onclick="resetAll()">СБРОСИТЬ ВСЁ</button>
 
             <div class="result" id="result" style="display: none;">
+                <div class="print-header">
+                    <h2>🪛 Калькулятор сборки</h2>
+                    <div class="date" id="printDate"></div>
+                </div>
                 <div>ИТОГО К ОПЛАТЕ</div>
                 <div class="total" id="total">0 руб</div>
                 <div class="details" id="details"></div>
+                <button class="print-btn" onclick="printResult()">🖨 ПЕЧАТЬ / PDF</button>
             </div>
         </div>
     </div>
@@ -269,8 +348,6 @@
         const ASSEMBLY_PERCENT = 0.12; // 12%
 
         // ПОЛНЫЙ СПИСОК УСЛУГ
-        // meter: true — услуга с метражом
-        // qty: true — услуга с количеством (вырезы/выпилы/розетки)
         const services = [
             // МОЙКА
             {name: "Вырез под мойку в столешнице", price: 1500, qty: true},
@@ -493,6 +570,16 @@
 
             document.getElementById('details').innerHTML = detailsHTML;
             document.getElementById('result').style.display = 'block';
+
+            // Обновляем дату для печати
+            document.getElementById('printDate').textContent =
+                'Дата расчёта: ' + new Date().toLocaleString('ru-RU');
+        }
+
+        // ПЕЧАТЬ
+        function printResult() {
+            calculate();
+            window.print();
         }
 
         // СБРОС
