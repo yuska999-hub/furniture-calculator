@@ -261,7 +261,7 @@
         .btn-close { background: #007aff; color: white; }
         .btn-clear { background: #ff3b30; color: white; }
 
-        /* Шаблон для PDF (невидимый на экране, но рендерится для PDF) */
+        /* Шаблон для PDF (невидим на экране, рендерится для PDF) */
         #pdfTemplate {
             position: fixed;
             left: -9999px;
@@ -603,9 +603,6 @@
             return { total, assembly, extra, travel, selectedList, km, name, addr };
         }
 
-        // ============================================
-        // ПЕЧАТЬ / PDF
-        // ============================================
         function printResult() {
             const data = calculate();
             const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
@@ -620,7 +617,6 @@
         function downloadPDF(data) {
             const { total, assembly, extra, travel, selectedList, km, name, addr } = data;
 
-            // Заполняем шаблон
             const dateStr = new Date().toLocaleString('ru-RU');
             let metaHTML = '';
             if (name) metaHTML += 'Клиент: ' + name + '<br>';
@@ -631,7 +627,6 @@
             if (selectedList.length) {
                 servicesHTML += '<div class="pdf-section">Дополнительные работы:</div>';
                 selectedList.forEach(item => {
-                    // Разбиваем "Название — N шт × цена = сумма руб" на две колонки
                     const parts = item.split(' — ');
                     if (parts.length === 2) {
                         servicesHTML += `<div class="pdf-line"><span>• ${parts[0]}</span><span>${parts[1]}</span></div>`;
@@ -656,7 +651,6 @@
                 ${servicesHTML}
             `;
 
-            // Генерируем PDF через html2pdf
             const element = document.getElementById('pdfTemplate');
             const opt = {
                 margin: 0,
