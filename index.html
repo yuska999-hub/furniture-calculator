@@ -116,38 +116,20 @@
         .service-name { flex: 1; font-size: 13px; line-height: 1.3; }
         .service-price { font-weight: bold; min-width: 65px; text-align: right; font-size: 13px; }
         
-        /* Стили для кнопок + и - */
-        .counter-controls {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            padding: 2px;
-        }
-        .counter-btn {
-            width: 28px;
-            height: 28px;
-            border: none;
-            background: white;
-            border-radius: 6px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #007aff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            user-select: none;
-        }
-        .counter-btn:active { background: #e0e0e0; }
-        .counter-value {
-            min-width: 30px;
+        /* Поле для ввода количества */
+        .counter-input {
+            width: 60px !important;
+            padding: 8px !important;
+            font-size: 16px !important;
             text-align: center;
-            font-size: 14px;
+            border: 2px solid #e0e0e0 !important;
+            border-radius: 8px;
             font-weight: bold;
             color: #333;
+        }
+        .counter-input:focus {
+            border-color: #007aff !important;
+            outline: none;
         }
 
         .checkbox {
@@ -465,22 +447,14 @@
                     if (service.meter) {
                         div.innerHTML = `
                             <div class="service-name">${service.name} (п.м.)</div>
-                            <div class="counter-controls">
-                                <button class="counter-btn" onclick="changeCounter(${idx}, -0.5, 'meter')">−</button>
-                                <span class="counter-value" id="val-${idx}">0</span>
-                                <button class="counter-btn" onclick="changeCounter(${idx}, 0.5, 'meter')">+</button>
-                            </div>
+                            <input type="text" inputmode="decimal" class="counter-input" id="val-${idx}" placeholder="0" oninput="updateVal(${idx})">
                             <span class="service-price" id="price-${idx}">0 руб</span>
                             <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
                     } else if (service.qty) {
                         div.innerHTML = `
                             <div class="service-name">${service.name}</div>
-                            <div class="counter-controls">
-                                <button class="counter-btn" onclick="changeCounter(${idx}, -1, 'qty')">−</button>
-                                <span class="counter-value" id="val-${idx}">1</span>
-                                <button class="counter-btn" onclick="changeCounter(${idx}, 1, 'qty')">+</button>
-                            </div>
-                            <span class="service-price" id="price-${idx}">${service.price} руб</span>
+                            <input type="text" inputmode="numeric" class="counter-input" id="val-${idx}" placeholder="0" oninput="updateVal(${idx})">
+                            <span class="service-price" id="price-${idx}">0 руб</span>
                             <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
                     } else {
                         div.innerHTML = `
@@ -499,26 +473,33 @@
             document.getElementById('category-' + catIdx).classList.toggle('collapsed');
         }
 
-        // Управление кнопками + и -
-        function changeCounter(index, step, type) {
+        // Обновление при вводе в текстовое поле
+        function updateVal(index) {
             const service = allServices[index];
             const valEl = document.getElementById('val-' + index);
             const priceEl = document.getElementById('price-' + index);
             const cb = document.getElementById('cb-' + index);
             
-            let current = parseFloat(valEl.textContent) || 0;
-            let newVal = current + step;
+            // Заменяем запятую на точку (для метража)
+            let strVal = valEl.value.replace(',', '.');
+            let val = parseFloat(strVal);
+            if (isNaN(val) || val < 0) val = 0;
             
-            if (type === 'meter') {
-                if (newVal < 0) newVal = 0;
-                valEl.textContent = newVal % 1 === 0 ? newVal.toFixed(1) : newVal.toFixed(1); // показываем 1.5
-                priceEl.textContent = (newVal * service.price).toFixed(0) + ' руб';
-                if (newVal > 0) cb.classList.add('checked'); else cb.classList.remove('checked');
-            } else {
-                if (newVal < 1) newVal = 1;
-                valEl.textContent = newVal;
-                priceEl.textContent = (newVal * service.price).toFixed(0) + ' руб';
+            // Для штук убираем дробную часть
+            if (service.qty && val % 1 !== 0) {
+                val = Math.floor(val);
+                valEl.value = val > 0 ? val : '';
+            }
+            
+            // Считаем цену
+            const totalPrice = Math.round(val * service.price);
+            priceEl.textContent = totalPrice > 0 ? totalPrice + ' руб' : '0 руб';
+            
+            // Управляем галочкой
+            if (val > 0) {
                 cb.classList.add('checked');
+            } else {
+                cb.classList.remove('checked');
             }
             
             calculate();
@@ -533,17 +514,15 @@
             const valEl = document.getElementById('val-' + index);
             if (service.meter || service.qty) {
                 if (cb.classList.contains('checked')) {
-                    if (parseFloat(valEl.textContent) === 0) {
-                        valEl.textContent = service.meter ? '1.0' : '1';
-                        changeCounter(index, 0, service.meter ? 'meter' : 'qty'); // обновить цену
+                    // Если включаем, а поле пустое — ставим 1
+                    if (!valEl.value || parseFloat(valEl.value.replace(',', '.')) === 0) {
+                        valEl.value = '1';
+                        updateVal(index);
                     }
                 } else {
-                    if (service.meter) {
-                        valEl.textContent = '0.0';
-                    } else {
-                        valEl.textContent = '1';
-                    }
-                    changeCounter(index, 0, service.meter ? 'meter' : 'qty');
+                    // Если выключаем — очищаем поле
+                    valEl.value = '';
+                    updateVal(index);
                 }
             }
             calculate();
@@ -566,13 +545,15 @@
                 
                 let sum = 0, text = '';
                 if (service.meter) {
-                    const val = parseFloat(document.getElementById('val-' + idx).textContent) || 0;
-                    sum = val * service.price;
+                    const valEl = document.getElementById('val-' + idx);
+                    const val = parseFloat(valEl.value.replace(',', '.')) || 0;
+                    sum = Math.round(val * service.price);
                     if (sum > 0) text = `${service.name} — ${val} м × ${service.price} = ${sum} руб`;
                 } else if (service.qty) {
-                    const val = parseInt(document.getElementById('val-' + idx).textContent) || 1;
+                    const valEl = document.getElementById('val-' + idx);
+                    const val = parseInt(valEl.value) || 0;
                     sum = val * service.price;
-                    text = `${service.name} — ${val} шт × ${service.price} = ${sum} руб`;
+                    if (sum > 0) text = `${service.name} — ${val} шт × ${service.price} = ${sum} руб`;
                 } else {
                     sum = service.price;
                     text = `${service.name} — ${service.price} руб`;
@@ -737,17 +718,7 @@
             document.getElementById('clientName').value = '';
             document.getElementById('clientAddress').value = '';
             document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
-            
-            document.querySelectorAll('.counter-value').forEach((el, idx) => {
-                // Определяем, метраж это или количество
-                const cb = el.parentElement.parentElement.querySelector('.checkbox');
-                if (cb && cb.id) {
-                    const serviceIdx = parseInt(cb.id.replace('cb-', ''));
-                    if (allServices[serviceIdx].meter) el.textContent = '0.0';
-                    else el.textContent = '1';
-                }
-            });
-            
+            document.querySelectorAll('.counter-input').forEach(inp => inp.value = '');
             document.querySelectorAll('.service-price').forEach(el => el.textContent = '0 руб');
             document.querySelectorAll('.service-item').forEach(i => i.style.display = 'flex');
             document.getElementById('result').style.display = 'none';
@@ -775,7 +746,7 @@
                 const idx = cb.id.replace('cb-', '');
                 draft.checked.push(idx);
                 const valEl = document.getElementById('val-' + idx);
-                if (valEl) draft.vals[idx] = valEl.textContent;
+                if (valEl) draft.vals[idx] = valEl.value;
             });
             localStorage.setItem('calcDraft', JSON.stringify(draft));
         }
@@ -793,11 +764,8 @@
                 if (d.vals) Object.keys(d.vals).forEach(idx => {
                     const valEl = document.getElementById('val-' + idx);
                     if (valEl) {
-                        valEl.textContent = d.vals[idx];
-                        const cb = document.getElementById('cb-' + idx);
-                        const service = allServices[idx];
-                        const priceEl = document.getElementById('price-' + idx);
-                        priceEl.textContent = (parseFloat(d.vals[idx]) * service.price).toFixed(0) + ' руб';
+                        valEl.value = d.vals[idx];
+                        updateVal(parseInt(idx));
                     }
                 });
                 
