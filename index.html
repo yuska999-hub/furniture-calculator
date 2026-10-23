@@ -267,7 +267,7 @@
     <script>
         // ПОЛНЫЙ СПИСОК УСЛУГ
         // meter: true — услуга с метражом
-        // qty: true — услуга с количеством (вырезы/выпилы)
+        // qty: true — услуга с количеством (вырезы/выпилы/розетки)
         const services = [
             // МОЙКА
             {name: "Вырез под мойку в столешнице", price: 1500, qty: true},
@@ -320,7 +320,7 @@
             {name: "Монтаж рейлинга", price: 1000, meter: true},
             {name: "Монтаж барной трубы", price: 500},
             {name: "Выпил стеновой панели", price: 250, qty: true},
-            {name: "Монтаж розетки", price: 350},
+            {name: "Монтаж розетки", price: 350, qty: true},
             {name: "Вырез под розетку в керамограните", price: 500, qty: true},
             {name: "Вырез под розетку в ЛДСП", price: 250, qty: true},
             {name: "Выпил в стеновой панели под электрику", price: 350, qty: true},
@@ -352,7 +352,7 @@
                         <div class="checkbox" onclick="toggleService(${index})"></div>
                     `;
                 } else if (service.qty) {
-                    // Услуга с количеством (вырезы/выпилы)
+                    // Услуга с количеством (вырезы/выпилы/розетки)
                     div.innerHTML = `
                         <div class="service-name">${service.name}</div>
                         <input type="number" class="qty-input" id="qty-${index}" placeholder="шт" min="1" step="1" value="1" oninput="updateQtyPrice(${index})">
