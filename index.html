@@ -99,6 +99,12 @@
             font-size: 16px !important;
             text-align: center;
         }
+        .qty-input {
+            width: 55px !important;
+            padding: 8px !important;
+            font-size: 16px !important;
+            text-align: center;
+        }
         .checkbox {
             width: 24px;
             height: 24px;
@@ -260,24 +266,26 @@
 
     <script>
         // ПОЛНЫЙ СПИСОК УСЛУГ
+        // meter: true — услуга с метражом
+        // qty: true — услуга с количеством (вырезы/выпилы)
         const services = [
             // МОЙКА
-            {name: "Вырез под мойку в столешнице", price: 1500},
+            {name: "Вырез под мойку в столешнице", price: 1500, qty: true},
             {name: "Монтаж нержавеющей мойки", price: 1000},
             {name: "Монтаж каменной мойки", price: 1400},
             {name: "Подключение мойки (слив/сифон)", price: 800},
 
             // СМЕСИТЕЛЬ
             {name: "Монтаж смесителя с подключением", price: 1200},
-            {name: "Вырез отверстия в столешнице под смеситель", price: 500},
-            {name: "Вырез отверстия в пластиковой столешнице под воду", price: 500},
-            {name: "Вырез отверстия в каменной столешнице под воду", price: 1000},
+            {name: "Вырез отверстия в столешнице под смеситель", price: 500, qty: true},
+            {name: "Вырез отверстия в пластиковой столешнице под воду", price: 500, qty: true},
+            {name: "Вырез отверстия в каменной столешнице под воду", price: 1000, qty: true},
             {name: "Монтаж ИПО с подключением", price: 4500},
             {name: "Монтаж питьевого фильтра с подключением", price: 4000},
 
             // ВАРОЧНАЯ ПАНЕЛЬ
-            {name: "Вырез под варочную панель в пластиковой столешнице", price: 1500},
-            {name: "Вырез под варочную панель в каменной столешнице", price: 2500},
+            {name: "Вырез под варочную панель в пластиковой столешнице", price: 1500, qty: true},
+            {name: "Вырез под варочную панель в каменной столешнице", price: 2500, qty: true},
             {name: "Монтаж варочной панели (без подключения)", price: 1000},
             {name: "Подключение варочной поверхности", price: 500},
 
@@ -300,8 +308,8 @@
             {name: "Монтаж встраиваемого холодильника/холодильной камеры", price: 3500},
 
             // ДОПОЛНИТЕЛЬНЫЕ РАБОТЫ
-            {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350},
-            {name: "Выпил под трубы в столешнице", price: 350},
+            {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350, qty: true},
+            {name: "Выпил под трубы в столешнице", price: 350, qty: true},
             {name: "Переделка модуля", price: 1500},
             {name: "Разводка электрики (проводов)", price: 150, meter: true},
             {name: "Подключение светильника", price: 600},
@@ -311,18 +319,18 @@
             {name: "Монтаж сушилки усиленной", price: 300},
             {name: "Монтаж рейлинга", price: 1000, meter: true},
             {name: "Монтаж барной трубы", price: 500},
-            {name: "Выпил стеновой панели", price: 250},
+            {name: "Выпил стеновой панели", price: 250, qty: true},
             {name: "Монтаж розетки", price: 350},
-            {name: "Вырез под розетку в керамограните", price: 500},
-            {name: "Вырез под розетку в ЛДСП", price: 250},
-            {name: "Выпил в стеновой панели под электрику", price: 350},
+            {name: "Вырез под розетку в керамограните", price: 500, qty: true},
+            {name: "Вырез под розетку в ЛДСП", price: 250, qty: true},
+            {name: "Выпил в стеновой панели под электрику", price: 350, qty: true},
             {name: "Монтаж диодной подсветки", price: 700, meter: true},
             {name: "Подключение диодной подсветки", price: 1200},
             {name: "Монтаж стеновой панели клиента", price: 4000},
             {name: "Монтаж столешницы клиента (пластик)", price: 5000},
             {name: "Монтаж напольного плинтуса клиента (мин. метр)", price: 800, meter: true},
             {name: "Демонтаж плинтуса напольного клиента (мин. метр)", price: 800, meter: true},
-            {name: "Выпил подоконника", price: 3000}
+            {name: "Выпил подоконника", price: 3000, qty: true}
         ];
 
         // ЗАГРУЗКА УСЛУГ
@@ -336,13 +344,23 @@
                 div.id = 'service-' + index;
 
                 if (service.meter) {
+                    // Услуга с метражом
                     div.innerHTML = `
                         <div class="service-name">${service.name} (за п.м.)</div>
                         <input type="number" class="meter-input" id="meter-${index}" placeholder="м" min="0" step="0.5" oninput="updateMeterPrice(${index})">
                         <span class="service-price" id="price-${index}">0 руб</span>
                         <div class="checkbox" onclick="toggleService(${index})"></div>
                     `;
+                } else if (service.qty) {
+                    // Услуга с количеством (вырезы/выпилы)
+                    div.innerHTML = `
+                        <div class="service-name">${service.name}</div>
+                        <input type="number" class="qty-input" id="qty-${index}" placeholder="шт" min="1" step="1" value="1" oninput="updateQtyPrice(${index})">
+                        <span class="service-price" id="price-${index}">${service.price} руб</span>
+                        <div class="checkbox" onclick="toggleService(${index})"></div>
+                    `;
                 } else {
+                    // Обычная услуга
                     div.innerHTML = `
                         <div class="service-name">${service.name}</div>
                         <div class="service-price">${service.price} руб</div>
@@ -366,10 +384,19 @@
                     updateMeterPrice(index);
                 }
             }
+
+            if (service.qty && checkbox.classList.contains('checked')) {
+                const qtyInput = document.getElementById('qty-' + index);
+                if (!qtyInput.value || parseInt(qtyInput.value) <= 0) {
+                    qtyInput.value = '1';
+                    updateQtyPrice(index);
+                }
+            }
+
             calculate();
         }
 
-        // ОБНОВЛЕНИЕ ЦЕНЫ МЕТРАЖА
+        // ОБНОВЛЕНИЕ ЦЕНЫ ПО МЕТРАЖУ
         function updateMeterPrice(index) {
             const service = services[index];
             const meterInput = document.getElementById('meter-' + index);
@@ -390,6 +417,23 @@
             calculate();
         }
 
+        // ОБНОВЛЕНИЕ ЦЕНЫ ПО КОЛИЧЕСТВУ
+        function updateQtyPrice(index) {
+            const service = services[index];
+            const qtyInput = document.getElementById('qty-' + index);
+            const priceDisplay = document.getElementById('price-' + index);
+
+            let qty = parseInt(qtyInput.value) || 0;
+            if (qty < 1) { qty = 1; qtyInput.value = 1; }
+
+            const totalPrice = qty * service.price;
+            priceDisplay.textContent = totalPrice + ' руб';
+
+            const checkbox = document.querySelector('#service-' + index + ' .checkbox');
+            checkbox.classList.add('checked');
+            calculate();
+        }
+
         // ОСНОВНОЙ РАСЧЕТ
         function calculate() {
             let price = parseInt(document.getElementById('price').value) || 0;
@@ -399,7 +443,6 @@
             let extra = 0;
             const selectedList = [];
 
-            // Правильный перебор с реальным индексом
             document.querySelectorAll('.checkbox.checked').forEach((cb) => {
                 const idx = parseInt(cb.closest('.service-item').id.replace('service-', ''));
                 const service = services[idx];
@@ -413,6 +456,12 @@
                         extra += sum;
                         selectedList.push(`${service.name} — ${meters} м × ${service.price} = ${sum} руб`);
                     }
+                } else if (service.qty) {
+                    const qtyInput = document.getElementById('qty-' + idx);
+                    const qty = parseInt(qtyInput.value) || 1;
+                    const sum = qty * service.price;
+                    extra += sum;
+                    selectedList.push(`${service.name} — ${qty} шт × ${service.price} = ${sum} руб`);
                 } else {
                     extra += service.price;
                     selectedList.push(`${service.name} — ${service.price} руб`);
@@ -439,7 +488,7 @@
                 detailsHTML += `<div class="line"><span>Доп. работы:</span> <b>0 руб</b></div>`;
             }
             detailsHTML += `
-                <div class="line" style="margin-top:8px;"><span>Выезд (${km} км):</span> <b>${travel.toLocaleString('ru-RU')} руб</b></div>
+                <div class="line" style="margin-top:8px;"><span>Выезд (${km} км от ЕКАД):</span> <b>${travel.toLocaleString('ru-RU')} руб</b></div>
             `;
 
             document.getElementById('details').innerHTML = detailsHTML;
@@ -453,6 +502,7 @@
             document.getElementById('search').value = '';
             document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
             document.querySelectorAll('.meter-input').forEach(inp => inp.value = '');
+            document.querySelectorAll('.qty-input').forEach(inp => inp.value = '1');
             document.querySelectorAll('[id^="price-"]').forEach(el => {
                 if (el.id !== 'price') el.textContent = '0 руб';
             });
