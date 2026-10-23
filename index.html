@@ -132,7 +132,7 @@
         .service-name { flex: 1; font-size: 13px; line-height: 1.3; }
         .service-price { font-weight: bold; min-width: 65px; text-align: right; font-size: 13px; }
         
-        /* ОДИНАКОВОЕ ПОЛЕ ДЛЯ МЕТРОВ И ШТУК */
+        /* ЕДИНОЕ ПОЛЕ ВВОДА ДЛЯ МЕТРОВ И ШТУК */
         .counter-input {
             width: 55px !important;
             padding: 6px !important;
@@ -285,6 +285,12 @@
         }
         .btn-close { background: #007aff; color: white; }
         .btn-clear { background: #ff3b30; color: white; }
+
+        /* СТИЛИ ДЛЯ ПОИСКА (переопределяем сворачивание) */
+        .search-active .category .service-item { display: none !important; }
+        .search-active .category .service-item.match { display: flex !important; }
+        .search-active .category { border-bottom: 1px solid #f0f0f0; }
+        .search-active .category-header { display: none; } /* Скрываем заголовки категорий при поиске */
 
         @media print {
             body { background: white; padding: 0; }
@@ -459,16 +465,16 @@
                     div.className = 'service-item';
                     div.id = 'service-' + idx;
                     
-                    if (service.meter) {
+                    // ОДИНАКОВЫЙ HTML ДЛЯ МЕТРОВ И ШТУК
+                    if (service.meter || service.qty) {
+                        const placeholder = service.meter ? "м" : "шт";
+                        const step = service.meter ? "0.5" : "1";
+                        const min = service.meter ? "0" : "1";
+                        const suffix = service.meter ? " (п.м.)" : "";
+                        
                         div.innerHTML = `
-                            <div class="service-name">${service.name} (п.м.)</div>
-                            <input type="number" class="counter-input" id="val-${idx}" placeholder="м" min="0" step="0.5" oninput="updateVal(${idx})">
-                            <span class="service-price" id="price-${idx}">0 руб</span>
-                            <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
-                    } else if (service.qty) {
-                        div.innerHTML = `
-                            <div class="service-name">${service.name}</div>
-                            <input type="number" class="counter-input" id="val-${idx}" placeholder="шт" min="1" step="1" oninput="updateVal(${idx})">
+                            <div class="service-name">${service.name}${suffix}</div>
+                            <input type="number" class="counter-input" id="val-${idx}" placeholder="${placeholder}" min="${min}" step="${step}" oninput="updateVal(${idx})">
                             <span class="service-price" id="price-${idx}">0 руб</span>
                             <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
                     } else {
@@ -711,9 +717,11 @@
             document.getElementById('price').value = 50000;
             document.getElementById('km').value = 0;
             document.getElementById('search').value = '';
+            document.getElementById('services').classList.remove('search-active'); // Убираем класс поиска
             document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
             document.querySelectorAll('.counter-input').forEach(inp => inp.value = '');
             document.querySelectorAll('.service-price').forEach(el => el.textContent = '0 руб');
+            document.querySelectorAll('.service-item').forEach(item => item.classList.remove('match')); // Убираем подсветку поиска
             document.querySelectorAll('.category').forEach(c => c.classList.remove('open')); 
             document.getElementById('result').style.display = 'none';
             localStorage.removeItem('calcDraft');
@@ -721,14 +729,23 @@
 
         function filterServices() {
             const q = document.getElementById('search').value.toLowerCase().trim();
-            document.querySelectorAll('.service-item').forEach(item => {
-                const name = item.querySelector('.service-name').textContent.toLowerCase();
-                item.style.display = name.includes(q) ? 'flex' : 'none';
-            });
+            const servicesContainer = document.getElementById('services');
+            
             if (q) {
-                document.querySelectorAll('.category').forEach(c => c.classList.add('open'));
+                servicesContainer.classList.add('search-active');
+                document.querySelectorAll('.service-item').forEach(item => {
+                    const name = item.querySelector('.service-name').textContent.toLowerCase();
+                    if (name.includes(q)) {
+                        item.classList.add('match');
+                    } else {
+                        item.classList.remove('match');
+                    }
+                });
             } else {
-                document.querySelectorAll('.category').forEach(c => c.classList.remove('open'));
+                servicesContainer.classList.remove('search-active');
+                document.querySelectorAll('.service-item').forEach(item => {
+                    item.classList.remove('match');
+                });
             }
         }
 
