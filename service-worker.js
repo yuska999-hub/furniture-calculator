@@ -1,5 +1,5 @@
 // Service Worker для офлайн-работы калькулятора
-const CACHE_NAME = 'furniture-calc-v1';
+const CACHE_NAME = 'furniture-calc-v2';
 const ASSETS = [
   './',
   './index.html',
