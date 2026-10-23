@@ -265,6 +265,9 @@
     </div>
 
     <script>
+        // ПРОЦЕНТ СБОРКИ
+        const ASSEMBLY_PERCENT = 0.12; // 12%
+
         // ПОЛНЫЙ СПИСОК УСЛУГ
         // meter: true — услуга с метражом
         // qty: true — услуга с количеством (вырезы/выпилы/розетки)
@@ -344,7 +347,6 @@
                 div.id = 'service-' + index;
 
                 if (service.meter) {
-                    // Услуга с метражом
                     div.innerHTML = `
                         <div class="service-name">${service.name} (за п.м.)</div>
                         <input type="number" class="meter-input" id="meter-${index}" placeholder="м" min="0" step="0.5" oninput="updateMeterPrice(${index})">
@@ -352,7 +354,6 @@
                         <div class="checkbox" onclick="toggleService(${index})"></div>
                     `;
                 } else if (service.qty) {
-                    // Услуга с количеством (вырезы/выпилы/розетки)
                     div.innerHTML = `
                         <div class="service-name">${service.name}</div>
                         <input type="number" class="qty-input" id="qty-${index}" placeholder="шт" min="1" step="1" value="1" oninput="updateQtyPrice(${index})">
@@ -360,7 +361,6 @@
                         <div class="checkbox" onclick="toggleService(${index})"></div>
                     `;
                 } else {
-                    // Обычная услуга
                     div.innerHTML = `
                         <div class="service-name">${service.name}</div>
                         <div class="service-price">${service.price} руб</div>
@@ -439,7 +439,7 @@
             let price = parseInt(document.getElementById('price').value) || 0;
             if (price < 0) price = 0;
 
-            const assembly = Math.round(price * 0.1);
+            const assembly = Math.round(price * ASSEMBLY_PERCENT);
             let extra = 0;
             const selectedList = [];
 
@@ -477,7 +477,7 @@
             document.getElementById('total').textContent = total.toLocaleString('ru-RU') + ' руб';
 
             let detailsHTML = `
-                <div class="line"><span>Сборка (10% от стоимости мебели):</span> <b>${assembly.toLocaleString('ru-RU')} руб</b></div>
+                <div class="line"><span>Сборка (12% от стоимости мебели):</span> <b>${assembly.toLocaleString('ru-RU')} руб</b></div>
             `;
             if (selectedList.length) {
                 detailsHTML += `<div style="margin-top:10px; font-weight:600; color:#333;">Доп. работы:</div>`;
