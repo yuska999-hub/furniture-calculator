@@ -11,7 +11,6 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <!-- Подключаем jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -60,7 +59,7 @@
             font-weight: 600;
             font-size: 14px;
         }
-        .input-group input {
+        .input-group input[type="text"], .input-group input[type="number"] {
             width: 100%;
             padding: 13px;
             border: 2px solid #e0e0e0;
@@ -116,14 +115,41 @@
         .service-item:last-child { border-bottom: none; }
         .service-name { flex: 1; font-size: 13px; line-height: 1.3; }
         .service-price { font-weight: bold; min-width: 65px; text-align: right; font-size: 13px; }
-        .meter-input, .qty-input {
-            width: 55px !important;
-            padding: 6px !important;
-            font-size: 14px !important;
-            text-align: center;
-            border: 1px solid #e0e0e0;
+        
+        /* Стили для кнопок + и - */
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f0f0f0;
             border-radius: 8px;
+            padding: 2px;
         }
+        .counter-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: white;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #007aff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            user-select: none;
+        }
+        .counter-btn:active { background: #e0e0e0; }
+        .counter-value {
+            min-width: 30px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+
         .checkbox {
             width: 22px;
             height: 22px;
@@ -435,16 +461,25 @@
                     const div = document.createElement('div');
                     div.className = 'service-item';
                     div.id = 'service-' + idx;
+                    
                     if (service.meter) {
                         div.innerHTML = `
                             <div class="service-name">${service.name} (п.м.)</div>
-                            <input type="number" class="meter-input" id="meter-${idx}" placeholder="м" min="0" step="0.5" oninput="updateMeterPrice(${idx})">
+                            <div class="counter-controls">
+                                <button class="counter-btn" onclick="changeCounter(${idx}, -0.5, 'meter')">−</button>
+                                <span class="counter-value" id="val-${idx}">0</span>
+                                <button class="counter-btn" onclick="changeCounter(${idx}, 0.5, 'meter')">+</button>
+                            </div>
                             <span class="service-price" id="price-${idx}">0 руб</span>
                             <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
                     } else if (service.qty) {
                         div.innerHTML = `
                             <div class="service-name">${service.name}</div>
-                            <input type="number" class="qty-input" id="qty-${idx}" placeholder="шт" min="1" step="1" value="1" oninput="updateQtyPrice(${idx})">
+                            <div class="counter-controls">
+                                <button class="counter-btn" onclick="changeCounter(${idx}, -1, 'qty')">−</button>
+                                <span class="counter-value" id="val-${idx}">1</span>
+                                <button class="counter-btn" onclick="changeCounter(${idx}, 1, 'qty')">+</button>
+                            </div>
                             <span class="service-price" id="price-${idx}">${service.price} руб</span>
                             <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
                     } else {
@@ -464,49 +499,53 @@
             document.getElementById('category-' + catIdx).classList.toggle('collapsed');
         }
 
+        // Управление кнопками + и -
+        function changeCounter(index, step, type) {
+            const service = allServices[index];
+            const valEl = document.getElementById('val-' + index);
+            const priceEl = document.getElementById('price-' + index);
+            const cb = document.getElementById('cb-' + index);
+            
+            let current = parseFloat(valEl.textContent) || 0;
+            let newVal = current + step;
+            
+            if (type === 'meter') {
+                if (newVal < 0) newVal = 0;
+                valEl.textContent = newVal % 1 === 0 ? newVal.toFixed(1) : newVal.toFixed(1); // показываем 1.5
+                priceEl.textContent = (newVal * service.price).toFixed(0) + ' руб';
+                if (newVal > 0) cb.classList.add('checked'); else cb.classList.remove('checked');
+            } else {
+                if (newVal < 1) newVal = 1;
+                valEl.textContent = newVal;
+                priceEl.textContent = (newVal * service.price).toFixed(0) + ' руб';
+                cb.classList.add('checked');
+            }
+            
+            calculate();
+            saveDraft();
+        }
+
         function toggleService(index) {
             const cb = document.getElementById('cb-' + index);
             const service = allServices[index];
             cb.classList.toggle('checked');
-            if (service.meter && cb.classList.contains('checked')) {
-                const meterInput = document.getElementById('meter-' + index);
-                if (!meterInput.value || parseFloat(meterInput.value) <= 0) {
-                    meterInput.value = '1';
-                    updateMeterPrice(index);
+            
+            const valEl = document.getElementById('val-' + index);
+            if (service.meter || service.qty) {
+                if (cb.classList.contains('checked')) {
+                    if (parseFloat(valEl.textContent) === 0) {
+                        valEl.textContent = service.meter ? '1.0' : '1';
+                        changeCounter(index, 0, service.meter ? 'meter' : 'qty'); // обновить цену
+                    }
+                } else {
+                    if (service.meter) {
+                        valEl.textContent = '0.0';
+                    } else {
+                        valEl.textContent = '1';
+                    }
+                    changeCounter(index, 0, service.meter ? 'meter' : 'qty');
                 }
             }
-            if (service.qty && cb.classList.contains('checked')) {
-                const qtyInput = document.getElementById('qty-' + index);
-                if (!qtyInput.value || parseInt(qtyInput.value) <= 0) {
-                    qtyInput.value = '1';
-                    updateQtyPrice(index);
-                }
-            }
-            calculate();
-            saveDraft();
-        }
-
-        function updateMeterPrice(index) {
-            const service = allServices[index];
-            const meterInput = document.getElementById('meter-' + index);
-            const priceDisplay = document.getElementById('price-' + index);
-            let meters = parseFloat(meterInput.value) || 0;
-            if (meters < 0) { meters = 0; meterInput.value = 0; }
-            priceDisplay.textContent = (meters * service.price) + ' руб';
-            const cb = document.getElementById('cb-' + index);
-            if (meters > 0) cb.classList.add('checked'); else cb.classList.remove('checked');
-            calculate();
-            saveDraft();
-        }
-
-        function updateQtyPrice(index) {
-            const service = allServices[index];
-            const qtyInput = document.getElementById('qty-' + index);
-            const priceDisplay = document.getElementById('price-' + index);
-            let qty = parseInt(qtyInput.value) || 0;
-            if (qty < 1) { qty = 1; qtyInput.value = 1; }
-            priceDisplay.textContent = (qty * service.price) + ' руб';
-            document.getElementById('cb-' + index).classList.add('checked');
             calculate();
             saveDraft();
         }
@@ -519,29 +558,33 @@
             let extra = 0;
             const selectedList = [];
             const perCategory = {};
+            
             document.querySelectorAll('.checkbox.checked').forEach(cb => {
                 const idx = parseInt(cb.id.replace('cb-', ''));
                 const service = allServices[idx];
                 if (!service) return;
+                
                 let sum = 0, text = '';
                 if (service.meter) {
-                    const meters = parseFloat(document.getElementById('meter-' + idx).value) || 0;
-                    sum = meters * service.price;
-                    if (sum > 0) text = `${service.name} — ${meters} м × ${service.price} = ${sum} руб`;
+                    const val = parseFloat(document.getElementById('val-' + idx).textContent) || 0;
+                    sum = val * service.price;
+                    if (sum > 0) text = `${service.name} — ${val} м × ${service.price} = ${sum} руб`;
                 } else if (service.qty) {
-                    const qty = parseInt(document.getElementById('qty-' + idx).value) || 1;
-                    sum = qty * service.price;
-                    text = `${service.name} — ${qty} шт × ${service.price} = ${sum} руб`;
+                    const val = parseInt(document.getElementById('val-' + idx).textContent) || 1;
+                    sum = val * service.price;
+                    text = `${service.name} — ${val} шт × ${service.price} = ${sum} руб`;
                 } else {
                     sum = service.price;
                     text = `${service.name} — ${service.price} руб`;
                 }
+                
                 if (sum > 0) {
                     extra += sum;
                     selectedList.push(text);
                     perCategory[service.category] = (perCategory[service.category] || 0) + 1;
                 }
             });
+            
             let km = parseInt(document.getElementById('km').value) || 0;
             if (km < 0) km = 0;
             const travel = Math.max(0, km - FREE_KM) * KM_PRICE;
@@ -596,19 +639,16 @@
         async function downloadPDF(data) {
             const { total, assembly, extra, travel, selectedList, km, name, addr } = data;
             
-            // Показываем загрузку, если нужно (по желанию)
             const btn = document.querySelector('.print-btn');
             const oldText = btn.textContent;
             btn.textContent = '⏳ Генерация...';
             btn.disabled = true;
 
             try {
-                // Загружаем шрифт Roboto для поддержки кириллицы
                 const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
                 const response = await fetch(fontUrl);
                 const fontBuffer = await response.arrayBuffer();
                 
-                // Конвертируем в Base64
                 let binary = '';
                 const bytes = new Uint8Array(fontBuffer);
                 const len = bytes.byteLength;
@@ -617,16 +657,13 @@
                 }
                 const fontBase64 = window.btoa(binary);
 
-                // Инициализируем jsPDF
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
 
-                // Регистрируем шрифт
                 doc.addFileToVFS('Roboto-Regular.ttf', fontBase64);
                 doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
                 doc.setFont('Roboto');
 
-                // Заголовок
                 doc.setFontSize(18);
                 doc.setTextColor(0, 122, 255);
                 doc.text('КАЛЬКУЛЯТОР СБОРКИ', 105, 20, { align: 'center' });
@@ -640,17 +677,15 @@
                 doc.text('Дата: ' + new Date().toLocaleString('ru-RU'), 14, y);
                 y += 10;
 
-                // Итого
                 doc.setFontSize(12);
                 doc.setTextColor(0, 0, 0);
                 doc.text('ИТОГО К ОПЛАТЕ:', 14, y);
                 doc.setFontSize(18);
-                doc.setFont('Roboto', 'bold'); // bold нет, но jsPDF его сымитирует
+                doc.setFont('Roboto', 'bold');
                 doc.text(total.toLocaleString('ru-RU') + ' руб', 14, y + 8);
                 doc.setFont('Roboto', 'normal');
                 y += 20;
 
-                // Состав
                 doc.setFontSize(11);
                 doc.text('Состав расчёта:', 14, y);
                 y += 6;
@@ -659,12 +694,10 @@
                 doc.text('Доп. работы: ' + extra.toLocaleString('ru-RU') + ' руб', 14, y); y += 6;
                 doc.text('Выезд (' + km + ' км от ЕКАД): ' + travel.toLocaleString('ru-RU') + ' руб', 14, y); y += 10;
 
-                // Список услуг
                 if (selectedList.length) {
                     doc.text('Дополнительные работы:', 14, y);
                     y += 6;
                     selectedList.forEach(item => {
-                        // Разбиваем на строки, если длинно
                         const lines = doc.splitTextToSize('• ' + item, 180);
                         doc.text(lines, 14, y);
                         y += (lines.length * 5);
@@ -673,7 +706,6 @@
                     doc.text('Дополнительные работы: не выбраны', 14, y);
                 }
 
-                // Сохраняем
                 doc.save('raschet-sborki-' + Date.now() + '.pdf');
             } catch (err) {
                 console.error('PDF Error:', err);
@@ -705,8 +737,17 @@
             document.getElementById('clientName').value = '';
             document.getElementById('clientAddress').value = '';
             document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
-            document.querySelectorAll('.meter-input').forEach(inp => inp.value = '');
-            document.querySelectorAll('.qty-input').forEach(inp => inp.value = '1');
+            
+            document.querySelectorAll('.counter-value').forEach((el, idx) => {
+                // Определяем, метраж это или количество
+                const cb = el.parentElement.parentElement.querySelector('.checkbox');
+                if (cb && cb.id) {
+                    const serviceIdx = parseInt(cb.id.replace('cb-', ''));
+                    if (allServices[serviceIdx].meter) el.textContent = '0.0';
+                    else el.textContent = '1';
+                }
+            });
+            
             document.querySelectorAll('.service-price').forEach(el => el.textContent = '0 руб');
             document.querySelectorAll('.service-item').forEach(i => i.style.display = 'flex');
             document.getElementById('result').style.display = 'none';
@@ -728,13 +769,13 @@
                 clientAddress: document.getElementById('clientAddress').value,
                 price: document.getElementById('price').value,
                 km: document.getElementById('km').value,
-                checked: [], meters: {}, qtys: {}
+                checked: [], vals: {}
             };
             document.querySelectorAll('.checkbox.checked').forEach(cb => {
                 const idx = cb.id.replace('cb-', '');
                 draft.checked.push(idx);
-                if (allServices[idx].meter) draft.meters[idx] = document.getElementById('meter-' + idx).value;
-                if (allServices[idx].qty) draft.qtys[idx] = document.getElementById('qty-' + idx).value;
+                const valEl = document.getElementById('val-' + idx);
+                if (valEl) draft.vals[idx] = valEl.textContent;
             });
             localStorage.setItem('calcDraft', JSON.stringify(draft));
         }
@@ -748,14 +789,18 @@
                 if (d.clientAddress) document.getElementById('clientAddress').value = d.clientAddress;
                 if (d.price) document.getElementById('price').value = d.price;
                 if (d.km) document.getElementById('km').value = d.km;
-                if (d.meters) Object.keys(d.meters).forEach(idx => {
-                    const inp = document.getElementById('meter-' + idx);
-                    if (inp) { inp.value = d.meters[idx]; updateMeterPrice(parseInt(idx)); }
+                
+                if (d.vals) Object.keys(d.vals).forEach(idx => {
+                    const valEl = document.getElementById('val-' + idx);
+                    if (valEl) {
+                        valEl.textContent = d.vals[idx];
+                        const cb = document.getElementById('cb-' + idx);
+                        const service = allServices[idx];
+                        const priceEl = document.getElementById('price-' + idx);
+                        priceEl.textContent = (parseFloat(d.vals[idx]) * service.price).toFixed(0) + ' руб';
+                    }
                 });
-                if (d.qtys) Object.keys(d.qtys).forEach(idx => {
-                    const inp = document.getElementById('qty-' + idx);
-                    if (inp) { inp.value = d.qtys[idx]; updateQtyPrice(parseInt(idx)); }
-                });
+                
                 if (d.checked) d.checked.forEach(idx => {
                     const cb = document.getElementById('cb-' + idx);
                     if (cb) cb.classList.add('checked');
