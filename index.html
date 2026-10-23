@@ -3,14 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="https://yuska999-hub.github.io/furniture-calculator/">
     <title>Калькулятор сборки</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="theme-color" content="#007aff">
-    <link rel="manifest" href="manifest.json">
+    
+    <!-- ВРЕМЕННО ОТКЛЮЧАЕМ SERVICE WORKER ДЛЯ СБРОСА КЭША -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+        if (window.caches) {
+            caches.keys().then(function(names) {
+                for (let name of names) caches.delete(name);
+            });
+        }
+    </script>
+
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -37,27 +49,15 @@
             align-items: center;
         }
         .header h1 { font-size: 20px; margin: 0; }
-        .header-actions {
-            display: flex;
-            gap: 8px;
-        }
         .header button {
-            width: auto;
             padding: 8px 12px;
             font-size: 14px;
-            margin: 0;
             background: rgba(255,255,255,0.2);
             border-radius: 10px;
             color: white;
             border: none;
             cursor: pointer;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .header button.update-btn {
-            background: #34c759;
         }
         .content { padding: 20px; }
         .input-group { margin-bottom: 15px; }
@@ -104,11 +104,9 @@
         }
         .category-header .arrow { transition: transform 0.2s; font-size: 12px; }
         
-        /* Свернутые категории по умолчанию */
         .category .category-header .arrow { transform: rotate(-90deg); }
         .category .service-item { display: none !important; }
         
-        /* Раскрытые категории */
         .category.open .category-header .arrow { transform: rotate(0deg); }
         .category.open .service-item { display: flex !important; }
 
@@ -127,12 +125,12 @@
             padding: 12px 15px;
             border-bottom: 1px solid #f5f5f5;
             gap: 8px;
+            background: white;
         }
         .service-item:last-child { border-bottom: none; }
         .service-name { flex: 1; font-size: 13px; line-height: 1.3; }
         .service-price { font-weight: bold; min-width: 65px; text-align: right; font-size: 13px; }
         
-        /* ЕДИНОЕ ПОЛЕ ВВОДА ДЛЯ МЕТРОВ И ШТУК */
         .counter-input {
             width: 55px !important;
             padding: 6px !important;
@@ -142,6 +140,7 @@
             border-radius: 8px;
             font-weight: bold;
             outline: none;
+            background: #fff;
         }
         .counter-input:focus {
             border-color: #007aff;
@@ -286,11 +285,9 @@
         .btn-close { background: #007aff; color: white; }
         .btn-clear { background: #ff3b30; color: white; }
 
-        /* СТИЛИ ДЛЯ ПОИСКА (переопределяем сворачивание) */
-        .search-active .category .service-item { display: none !important; }
-        .search-active .category .service-item.match { display: flex !important; }
-        .search-active .category { border-bottom: 1px solid #f0f0f0; }
-        .search-active .category-header { display: none; } /* Скрываем заголовки категорий при поиске */
+        .search-mode .category .service-item { display: none !important; }
+        .search-mode .category .service-item.visible { display: flex !important; }
+        .search-mode .category-header { display: none; }
 
         @media print {
             body { background: white; padding: 0; }
@@ -312,10 +309,7 @@
     <div class="app">
         <div class="header">
             <h1>🪛 Калькулятор</h1>
-            <div class="header-actions">
-                <button class="update-btn" onclick="forceUpdate()" title="Сбросить кэш и обновить">🔄</button>
-                <button onclick="openHistory()">История</button>
-            </div>
+            <button onclick="openHistory()">История</button>
         </div>
 
         <div class="content">
@@ -420,14 +414,15 @@
                 {name: "Монтаж стеновой панели клиента", price: 4000},
                 {name: "Монтаж столешницы клиента (пластик)", price: 5000},
                 {name: "Выпил стеновой панели", price: 250, qty: true},
-                {name: "Выпил подоконника", price: 3000, qty: true}
+                {name: "Выпил подоконника", price: 3000, qty: true},
+                {name: "Монтаж плитки", price: 3000, meter: true}
             ]},
             { title: "Доп. работы", services: [
                 {name: "Нанесение герметика", price: 300, meter: true},
                 {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350, qty: true},
                 {name: "Выпил под трубы в столешнице", price: 350, qty: true},
                 {name: "Переделка модуля", price: 1500},
-                {name: "Монтаж ручки", price: 200},
+                {name: "Монтаж ручек", price: 100, qty: true},
                 {name: "Монтаж сушилки усиленной", price: 300},
                 {name: "Монтаж рейлинга", price: 1000, meter: true},
                 {name: "Монтаж барной трубы", price: 500},
@@ -465,16 +460,14 @@
                     div.className = 'service-item';
                     div.id = 'service-' + idx;
                     
-                    // ОДИНАКОВЫЙ HTML ДЛЯ МЕТРОВ И ШТУК
                     if (service.meter || service.qty) {
+                        const inputType = service.meter ? 'number' : 'text';
+                        const inputMode = service.meter ? '' : 'inputmode="numeric"';
                         const placeholder = service.meter ? "м" : "шт";
-                        const step = service.meter ? "0.5" : "1";
-                        const min = service.meter ? "0" : "1";
-                        const suffix = service.meter ? " (п.м.)" : "";
                         
                         div.innerHTML = `
-                            <div class="service-name">${service.name}${suffix}</div>
-                            <input type="number" class="counter-input" id="val-${idx}" placeholder="${placeholder}" min="${min}" step="${step}" oninput="updateVal(${idx})">
+                            <div class="service-name">${service.name} ${service.meter ? '(п.м.)' : ''}</div>
+                            <input type="${inputType}" ${inputMode} class="counter-input" id="val-${idx}" placeholder="${placeholder}" oninput="updateVal(${idx})">
                             <span class="service-price" id="price-${idx}">0 руб</span>
                             <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
                     } else {
@@ -491,8 +484,7 @@
         }
 
         function toggleCategory(catIdx) {
-            const cat = document.getElementById('category-' + catIdx);
-            cat.classList.toggle('open');
+            document.getElementById('category-' + catIdx).classList.toggle('open');
         }
 
         function updateVal(index) {
@@ -512,11 +504,8 @@
             const totalPrice = Math.round(val * service.price);
             priceEl.textContent = totalPrice > 0 ? totalPrice + ' руб' : '0 руб';
             
-            if (val > 0) {
-                cb.classList.add('checked');
-            } else {
-                cb.classList.remove('checked');
-            }
+            if (val > 0) cb.classList.add('checked');
+            else cb.classList.remove('checked');
             
             calculate();
             saveDraft();
@@ -614,138 +603,21 @@
             return { total, assembly, extra, travel, selectedList, km };
         }
 
-        function printResult() {
-            const data = calculate();
-            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-
-            if (isMobile) {
-                downloadPDF(data);
-            } else {
-                window.print();
-            }
-        }
-
-        async function downloadPDF(data) {
-            const { total, assembly, extra, travel, selectedList, km } = data;
-            
-            const btn = document.querySelector('.print-btn');
-            const oldText = btn.textContent;
-            btn.textContent = '⏳ Генерация...';
-            btn.disabled = true;
-
-            try {
-                const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
-                const response = await fetch(fontUrl);
-                const fontBuffer = await response.arrayBuffer();
-                
-                let binary = '';
-                const bytes = new Uint8Array(fontBuffer);
-                const len = bytes.byteLength;
-                for (let i = 0; i < len; i++) {
-                    binary += String.fromCharCode(bytes[i]);
-                }
-                const fontBase64 = window.btoa(binary);
-
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-
-                doc.addFileToVFS('Roboto-Regular.ttf', fontBase64);
-                doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
-                doc.setFont('Roboto');
-
-                doc.setFontSize(18);
-                doc.setTextColor(0, 122, 255);
-                doc.text('КАЛЬКУЛЯТОР СБОРКИ', 105, 20, { align: 'center' });
-
-                doc.setFontSize(10);
-                doc.setTextColor(100, 100, 100);
-                let y = 30;
-                
-                doc.text('Дата: ' + new Date().toLocaleString('ru-RU'), 14, y);
-                y += 10;
-
-                doc.setFontSize(12);
-                doc.setTextColor(0, 0, 0);
-                doc.text('ИТОГО К ОПЛАТЕ:', 14, y);
-                doc.setFontSize(18);
-                doc.setFont('Roboto', 'bold');
-                doc.text(total.toLocaleString('ru-RU') + ' руб', 14, y + 8);
-                doc.setFont('Roboto', 'normal');
-                y += 20;
-
-                doc.setFontSize(11);
-                doc.text('Состав расчёта:', 14, y);
-                y += 6;
-                doc.setFontSize(10);
-                doc.text('Сборка (12%): ' + assembly.toLocaleString('ru-RU') + ' руб', 14, y); y += 6;
-                doc.text('Доп. работы: ' + extra.toLocaleString('ru-RU') + ' руб', 14, y); y += 6;
-                doc.text('Выезд (' + km + ' км от ЕКАД): ' + travel.toLocaleString('ru-RU') + ' руб', 14, y); y += 10;
-
-                if (selectedList.length) {
-                    doc.text('Дополнительные работы:', 14, y);
-                    y += 6;
-                    selectedList.forEach(item => {
-                        const lines = doc.splitTextToSize('• ' + item, 180);
-                        doc.text(lines, 14, y);
-                        y += (lines.length * 5);
-                    });
-                } else {
-                    doc.text('Дополнительные работы: не выбраны', 14, y);
-                }
-
-                doc.save('raschet-sborki-' + Date.now() + '.pdf');
-            } catch (err) {
-                console.error('PDF Error:', err);
-                alert('Ошибка при создании PDF. Проверьте интернет или попробуйте ещё раз.');
-            } finally {
-                btn.textContent = oldText;
-                btn.disabled = false;
-            }
-        }
-
-        function shareResult() {
-            calculate();
-            const total = document.getElementById('total').textContent;
-            const details = document.getElementById('details').innerText;
-            let text = '🪛 Расчёт сборки мебели\n\n';
-            text += details + '\n\nИТОГО: ' + total;
-            window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
-        }
-
-        function resetAll() {
-            if (!confirm('Сбросить всё? Черновик будет удалён.')) return;
-            document.getElementById('price').value = 50000;
-            document.getElementById('km').value = 0;
-            document.getElementById('search').value = '';
-            document.getElementById('services').classList.remove('search-active'); // Убираем класс поиска
-            document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
-            document.querySelectorAll('.counter-input').forEach(inp => inp.value = '');
-            document.querySelectorAll('.service-price').forEach(el => el.textContent = '0 руб');
-            document.querySelectorAll('.service-item').forEach(item => item.classList.remove('match')); // Убираем подсветку поиска
-            document.querySelectorAll('.category').forEach(c => c.classList.remove('open')); 
-            document.getElementById('result').style.display = 'none';
-            localStorage.removeItem('calcDraft');
-        }
-
         function filterServices() {
             const q = document.getElementById('search').value.toLowerCase().trim();
-            const servicesContainer = document.getElementById('services');
+            const container = document.getElementById('services');
+            const items = document.querySelectorAll('.service-item');
             
-            if (q) {
-                servicesContainer.classList.add('search-active');
-                document.querySelectorAll('.service-item').forEach(item => {
-                    const name = item.querySelector('.service-name').textContent.toLowerCase();
-                    if (name.includes(q)) {
-                        item.classList.add('match');
-                    } else {
-                        item.classList.remove('match');
-                    }
+            if (q.length > 0) {
+                container.classList.add('search-mode');
+                items.forEach(item => {
+                    const text = item.querySelector('.service-name').textContent.toLowerCase();
+                    if (text.includes(q)) item.classList.add('visible');
+                    else item.classList.remove('visible');
                 });
             } else {
-                servicesContainer.classList.remove('search-active');
-                document.querySelectorAll('.service-item').forEach(item => {
-                    item.classList.remove('match');
-                });
+                container.classList.remove('search-mode');
+                items.forEach(item => item.classList.remove('visible'));
             }
         }
 
@@ -823,20 +695,103 @@
             saveToHistory(total);
         }
 
-        // ЖЕСТКОЕ ОБНОВЛЕНИЕ КЭША
-        async function forceUpdate() {
-            if ('serviceWorker' in navigator) {
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                for (let reg of registrations) {
-                    await reg.unregister();
+        function resetAll() {
+            if (!confirm('Сбросить всё? Черновик будет удалён.')) return;
+            document.getElementById('price').value = 50000;
+            document.getElementById('km').value = 0;
+            document.getElementById('search').value = '';
+            document.getElementById('services').classList.remove('search-mode');
+            document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
+            document.querySelectorAll('.counter-input').forEach(inp => inp.value = '');
+            document.querySelectorAll('.service-price').forEach(el => el.textContent = '0 руб');
+            document.querySelectorAll('.category').forEach(c => c.classList.remove('open')); 
+            document.querySelectorAll('.service-item').forEach(item => item.classList.remove('visible'));
+            document.getElementById('result').style.display = 'none';
+            localStorage.removeItem('calcDraft');
+        }
+
+        function printResult() {
+            const data = calculate();
+            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+            if (isMobile) downloadPDF(data);
+            else window.print();
+        }
+
+        async function downloadPDF(data) {
+            const { total, assembly, extra, travel, selectedList, km } = data;
+            const btn = document.querySelector('.print-btn');
+            const oldText = btn.textContent;
+            btn.textContent = '⏳ Генерация...';
+            btn.disabled = true;
+
+            try {
+                const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
+                const response = await fetch(fontUrl);
+                const fontBuffer = await response.arrayBuffer();
+                let binary = '';
+                const bytes = new Uint8Array(fontBuffer);
+                for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+                const fontBase64 = window.btoa(binary);
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.addFileToVFS('Roboto-Regular.ttf', fontBase64);
+                doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+                doc.setFont('Roboto');
+
+                doc.setFontSize(18);
+                doc.setTextColor(0, 122, 255);
+                doc.text('КАЛЬКУЛЯТОР СБОРКИ', 105, 20, { align: 'center' });
+
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                let y = 30;
+                doc.text('Дата: ' + new Date().toLocaleString('ru-RU'), 14, y);
+                y += 10;
+
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text('ИТОГО К ОПЛАТЕ:', 14, y);
+                doc.setFontSize(18);
+                doc.setFont('Roboto', 'bold');
+                doc.text(total.toLocaleString('ru-RU') + ' руб', 14, y + 8);
+                doc.setFont('Roboto', 'normal');
+                y += 20;
+
+                doc.setFontSize(11);
+                doc.text('Состав расчёта:', 14, y); y += 6;
+                doc.setFontSize(10);
+                doc.text('Сборка (12%): ' + assembly.toLocaleString('ru-RU') + ' руб', 14, y); y += 6;
+                doc.text('Доп. работы: ' + extra.toLocaleString('ru-RU') + ' руб', 14, y); y += 6;
+                doc.text('Выезд (' + km + ' км от ЕКАД): ' + travel.toLocaleString('ru-RU') + ' руб', 14, y); y += 10;
+
+                if (selectedList.length) {
+                    doc.text('Дополнительные работы:', 14, y); y += 6;
+                    selectedList.forEach(item => {
+                        const lines = doc.splitTextToSize('• ' + item, 180);
+                        doc.text(lines, 14, y);
+                        y += (lines.length * 5);
+                    });
+                } else {
+                    doc.text('Дополнительные работы: не выбраны', 14, y);
                 }
+
+                doc.save('raschet-sborki-' + Date.now() + '.pdf');
+            } catch (err) {
+                console.error('PDF Error:', err);
+                alert('Ошибка при создании PDF. Проверьте интернет.');
+            } finally {
+                btn.textContent = oldText;
+                btn.disabled = false;
             }
-            const cacheNames = await caches.keys();
-            for (let name of cacheNames) {
-                await caches.delete(name);
-            }
-            alert('Кэш сброшен. Страница сейчас перезагрузится.');
-            window.location.reload(true);
+        }
+
+        function shareResult() {
+            calculate();
+            const total = document.getElementById('total').textContent;
+            const details = document.getElementById('details').innerText;
+            let text = '🪛 Расчёт сборки мебели\n\n' + details + '\n\nИТОГО: ' + total;
+            window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
         }
 
         ['price', 'km'].forEach(id => {
@@ -845,14 +800,6 @@
         document.getElementById('search').addEventListener('input', filterServices);
 
         loadServices();
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(reg => console.log('SW зарегистрирован:', reg.scope))
-                    .catch(err => console.warn('SW ошибка:', err));
-            });
-        }
     </script>
 </body>
 </html>
