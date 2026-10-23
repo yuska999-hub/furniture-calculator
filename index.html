@@ -31,13 +31,16 @@
         .header {
             background: #007aff;
             color: white;
-            padding: 25px;
-            text-align: center;
+            padding: 20px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .header h1 { font-size: 20px; margin: 0; }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
         .header button {
             width: auto;
             padding: 8px 12px;
@@ -49,6 +52,12 @@
             border: none;
             cursor: pointer;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header button.update-btn {
+            background: #34c759;
         }
         .content { padding: 20px; }
         .input-group { margin-bottom: 15px; }
@@ -123,7 +132,7 @@
         .service-name { flex: 1; font-size: 13px; line-height: 1.3; }
         .service-price { font-weight: bold; min-width: 65px; text-align: right; font-size: 13px; }
         
-        /* ТОЧНО ТАКОЕ ЖЕ ПОЛЕ, КАК ДЛЯ МЕТРОВ */
+        /* ОДИНАКОВОЕ ПОЛЕ ДЛЯ МЕТРОВ И ШТУК */
         .counter-input {
             width: 55px !important;
             padding: 6px !important;
@@ -132,6 +141,10 @@
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             font-weight: bold;
+            outline: none;
+        }
+        .counter-input:focus {
+            border-color: #007aff;
         }
 
         .checkbox {
@@ -292,19 +305,14 @@
 <body>
     <div class="app">
         <div class="header">
-            <h1>🪛 Калькулятор сборки</h1>
-            <button onclick="openHistory()">История</button>
+            <h1>🪛 Калькулятор</h1>
+            <div class="header-actions">
+                <button class="update-btn" onclick="forceUpdate()" title="Сбросить кэш и обновить">🔄</button>
+                <button onclick="openHistory()">История</button>
+            </div>
         </div>
 
         <div class="content">
-            <div class="input-group">
-                <label>Имя клиента (необязательно)</label>
-                <input type="text" id="clientName" placeholder="Иванов Иван">
-            </div>
-            <div class="input-group">
-                <label>Адрес (необязательно)</label>
-                <input type="text" id="clientAddress" placeholder="ул. Ленина, 10, кв. 5">
-            </div>
             <div class="input-group">
                 <label>Стоимость мебели (руб)</label>
                 <input type="number" id="price" placeholder="50000" value="50000" min="0" step="1000">
@@ -320,6 +328,7 @@
             </div>
             <button class="main-btn" onclick="calculateAndSave()">РАССЧИТАТЬ</button>
             <button class="reset-btn" onclick="resetAll()">СБРОСИТЬ ВСЁ</button>
+            
             <div class="result" id="result" style="display: none;">
                 <div class="print-header">
                     <h2>🪛 Калькулятор сборки</h2>
@@ -408,6 +417,7 @@
                 {name: "Выпил подоконника", price: 3000, qty: true}
             ]},
             { title: "Доп. работы", services: [
+                {name: "Нанесение герметика", price: 300, meter: true},
                 {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350, qty: true},
                 {name: "Выпил под трубы в столешнице", price: 350, qty: true},
                 {name: "Переделка модуля", price: 1500},
@@ -450,14 +460,12 @@
                     div.id = 'service-' + idx;
                     
                     if (service.meter) {
-                        // МЕТРЫ (работает нормально, ничего не менял)
                         div.innerHTML = `
                             <div class="service-name">${service.name} (п.м.)</div>
                             <input type="number" class="counter-input" id="val-${idx}" placeholder="м" min="0" step="0.5" oninput="updateVal(${idx})">
                             <span class="service-price" id="price-${idx}">0 руб</span>
                             <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
                     } else if (service.qty) {
-                        // ШТУКИ (теперь точная копия метров, только step="1" min="1")
                         div.innerHTML = `
                             <div class="service-name">${service.name}</div>
                             <input type="number" class="counter-input" id="val-${idx}" placeholder="шт" min="1" step="1" oninput="updateVal(${idx})">
@@ -481,7 +489,6 @@
             cat.classList.toggle('open');
         }
 
-        // ЕДИНАЯ ФУНКЦИЯ ДЛЯ ВСЕХ
         function updateVal(index) {
             const service = allServices[index];
             const valEl = document.getElementById('val-' + index);
@@ -491,7 +498,6 @@
             let val = parseFloat(valEl.value);
             if (isNaN(val) || val < 0) val = 0;
             
-            // Если это штуки и ввели дробное — округляем
             if (service.qty && val > 0 && val % 1 !== 0) {
                 val = Math.floor(val);
                 valEl.value = val; 
@@ -596,15 +602,10 @@
             document.getElementById('details').innerHTML = detailsHTML;
             document.getElementById('result').style.display = 'block';
 
-            const name = document.getElementById('clientName').value.trim();
-            const addr = document.getElementById('clientAddress').value.trim();
-            const metaParts = [];
-            if (name) metaParts.push('Клиент: ' + name);
-            if (addr) metaParts.push('Адрес: ' + addr);
-            metaParts.push('Дата: ' + new Date().toLocaleString('ru-RU'));
+            const metaParts = ['Дата: ' + new Date().toLocaleString('ru-RU')];
             document.getElementById('printMeta').innerHTML = metaParts.join('<br>');
 
-            return { total, assembly, extra, travel, selectedList, km, name, addr };
+            return { total, assembly, extra, travel, selectedList, km };
         }
 
         function printResult() {
@@ -619,7 +620,7 @@
         }
 
         async function downloadPDF(data) {
-            const { total, assembly, extra, travel, selectedList, km, name, addr } = data;
+            const { total, assembly, extra, travel, selectedList, km } = data;
             
             const btn = document.querySelector('.print-btn');
             const oldText = btn.textContent;
@@ -654,8 +655,6 @@
                 doc.setTextColor(100, 100, 100);
                 let y = 30;
                 
-                if (name) { doc.text('Клиент: ' + name, 14, y); y += 6; }
-                if (addr) { doc.text('Адрес: ' + addr, 14, y); y += 6; }
                 doc.text('Дата: ' + new Date().toLocaleString('ru-RU'), 14, y);
                 y += 10;
 
@@ -700,14 +699,10 @@
 
         function shareResult() {
             calculate();
-            const name = document.getElementById('clientName').value.trim();
-            const addr = document.getElementById('clientAddress').value.trim();
             const total = document.getElementById('total').textContent;
             const details = document.getElementById('details').innerText;
-            let text = '🪛 Расчёт сборки мебели\n';
-            if (name) text += 'Клиент: ' + name + '\n';
-            if (addr) text += 'Адрес: ' + addr + '\n';
-            text += '\n' + details + '\n\nИТОГО: ' + total;
+            let text = '🪛 Расчёт сборки мебели\n\n';
+            text += details + '\n\nИТОГО: ' + total;
             window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
         }
 
@@ -716,12 +711,10 @@
             document.getElementById('price').value = 50000;
             document.getElementById('km').value = 0;
             document.getElementById('search').value = '';
-            document.getElementById('clientName').value = '';
-            document.getElementById('clientAddress').value = '';
             document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
             document.querySelectorAll('.counter-input').forEach(inp => inp.value = '');
             document.querySelectorAll('.service-price').forEach(el => el.textContent = '0 руб');
-            document.querySelectorAll('.category').forEach(c => c.classList.remove('open')); // Закрываем все
+            document.querySelectorAll('.category').forEach(c => c.classList.remove('open')); 
             document.getElementById('result').style.display = 'none';
             localStorage.removeItem('calcDraft');
         }
@@ -733,18 +726,14 @@
                 item.style.display = name.includes(q) ? 'flex' : 'none';
             });
             if (q) {
-                // При поиске раскрываем все категории
                 document.querySelectorAll('.category').forEach(c => c.classList.add('open'));
             } else {
-                // Если поиск пуст — возвращаем свернутое состояние
                 document.querySelectorAll('.category').forEach(c => c.classList.remove('open'));
             }
         }
 
         function saveDraft() {
             const draft = {
-                clientName: document.getElementById('clientName').value,
-                clientAddress: document.getElementById('clientAddress').value,
                 price: document.getElementById('price').value,
                 km: document.getElementById('km').value,
                 checked: [], vals: {}
@@ -763,8 +752,6 @@
             if (!raw) return;
             try {
                 const d = JSON.parse(raw);
-                if (d.clientName) document.getElementById('clientName').value = d.clientName;
-                if (d.clientAddress) document.getElementById('clientAddress').value = d.clientAddress;
                 if (d.price) document.getElementById('price').value = d.price;
                 if (d.km) document.getElementById('km').value = d.km;
                 
@@ -819,7 +806,23 @@
             saveToHistory(total);
         }
 
-        ['price', 'km', 'clientName', 'clientAddress'].forEach(id => {
+        // ЖЕСТКОЕ ОБНОВЛЕНИЕ КЭША
+        async function forceUpdate() {
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let reg of registrations) {
+                    await reg.unregister();
+                }
+            }
+            const cacheNames = await caches.keys();
+            for (let name of cacheNames) {
+                await caches.delete(name);
+            }
+            alert('Кэш сброшен. Страница сейчас перезагрузится.');
+            window.location.reload(true);
+        }
+
+        ['price', 'km'].forEach(id => {
             document.getElementById(id).addEventListener('input', () => { calculate(); saveDraft(); });
         });
         document.getElementById('search').addEventListener('input', filterServices);
