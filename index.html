@@ -81,9 +81,7 @@
             border: 1px solid #f0f0f0;
             border-radius: 12px;
         }
-        .category {
-            border-bottom: 2px solid #f0f0f0;
-        }
+        .category { border-bottom: 2px solid #f0f0f0; }
         .category:last-child { border-bottom: none; }
         .category-header {
             display: flex;
@@ -100,18 +98,11 @@
             top: 0;
             z-index: 2;
         }
-        .category-header .arrow {
-            transition: transform 0.2s;
-            font-size: 12px;
-        }
-        .category.collapsed .category-header .arrow {
-            transform: rotate(-90deg);
-        }
-        .category.collapsed .service-item {
-            display: none !important;
-        }
+        .category-header .arrow { transition: transform 0.2s; font-size: 12px; }
+        .category.collapsed .category-header .arrow { transform: rotate(-90deg); }
+        .category.collapsed .service-item { display: none !important; }
         .category-count {
-            background: #007aff;
+            background: #ccc;
             color: white;
             border-radius: 10px;
             padding: 1px 8px;
@@ -128,17 +119,8 @@
             gap: 8px;
         }
         .service-item:last-child { border-bottom: none; }
-        .service-name {
-            flex: 1;
-            font-size: 13px;
-            line-height: 1.3;
-        }
-        .service-price {
-            font-weight: bold;
-            min-width: 65px;
-            text-align: right;
-            font-size: 13px;
-        }
+        .service-name { flex: 1; font-size: 13px; line-height: 1.3; }
+        .service-price { font-weight: bold; min-width: 65px; text-align: right; font-size: 13px; }
         .meter-input, .qty-input {
             width: 55px !important;
             padding: 6px !important;
@@ -281,11 +263,7 @@
         .history-item:last-child { border-bottom: none; }
         .history-item .date { color: #999; font-size: 11px; }
         .history-item .sum { font-weight: bold; color: #007aff; }
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
+        .modal-actions { display: flex; gap: 10px; margin-top: 12px; }
         .modal-actions button {
             flex: 1;
             padding: 11px;
@@ -373,7 +351,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно истории -->
     <div class="modal" id="historyModal">
         <div class="modal-content">
             <h2>История расчетов</h2>
@@ -387,108 +364,80 @@
 
     <script>
         // НАСТРОЙКИ
-        const ASSEMBLY_PERCENT = 0.12;   // 12% сборки
-        const MIN_ASSEMBLY = 3000;       // минимальная стоимость сборки, руб
-        const FREE_KM = 10;              // бесплатные км от ЕКАД
-        const KM_PRICE = 40;             // цена за км свыше
+        const ASSEMBLY_PERCENT = 0.12;
+        const MIN_ASSEMBLY = 3000;
+        const FREE_KM = 10;
+        const KM_PRICE = 40;
 
         // СПИСОК УСЛУГ С КАТЕГОРИЯМИ
         const categories = [
-            {
-                title: "Мойка",
-                services: [
-                    {name: "Вырез под мойку в столешнице", price: 1500, qty: true},
-                    {name: "Монтаж нержавеющей мойки", price: 1000},
-                    {name: "Монтаж каменной мойки", price: 1400},
-                    {name: "Подключение мойки (слив/сифон)", price: 800}
-                ]
-            },
-            {
-                title: "Смеситель",
-                services: [
-                    {name: "Монтаж смесителя с подключением", price: 1200},
-                    {name: "Вырез отверстия в столешнице под смеситель", price: 500, qty: true},
-                    {name: "Вырез отверстия в пластиковой столешнице под воду", price: 500, qty: true},
-                    {name: "Вырез отверстия в каменной столешнице под воду", price: 1000, qty: true},
-                    {name: "Монтаж ИПО с подключением", price: 4500},
-                    {name: "Монтаж питьевого фильтра с подключением", price: 4000}
-                ]
-            },
-            {
-                title: "Варочная панель",
-                services: [
-                    {name: "Вырез под варочную панель в пластиковой столешнице", price: 1500, qty: true},
-                    {name: "Вырез под варочную панель в каменной столешнице", price: 2500, qty: true},
-                    {name: "Монтаж варочной панели (без подключения)", price: 1000},
-                    {name: "Подключение варочной поверхности", price: 500}
-                ]
-            },
-            {
-                title: "Духовой шкаф / СВЧ",
-                services: [
-                    {name: "Монтаж духового шкафа (без подключения)", price: 1000},
-                    {name: "Подключение духового шкафа", price: 500},
-                    {name: "Монтаж СВЧ (без подключения)", price: 1500},
-                    {name: "Подключение СВЧ", price: 500}
-                ]
-            },
-            {
-                title: "Вытяжка",
-                services: [
-                    {name: "Монтаж встроенной или подвесной вытяжки", price: 2000},
-                    {name: "Подключение вытяжки к воздуховоду", price: 1000},
-                    {name: "Протяжка воздуховода (гофры)", price: 700, meter: true}
-                ]
-            },
-            {
-                title: "Техника",
-                services: [
-                    {name: "Монтаж ПММ с подключением", price: 2500},
-                    {name: "Монтаж стиральной машины с подключением", price: 2500},
-                    {name: "Монтаж встраиваемого холодильника/холодильной камеры", price: 3500}
-                ]
-            },
-            {
-                title: "Электрика и свет",
-                services: [
-                    {name: "Разводка электрики (проводов)", price: 150, meter: true},
-                    {name: "Подключение светильника", price: 600},
-                    {name: "Врезка светильника", price: 500},
-                    {name: "Монтаж накладного светильника", price: 500},
-                    {name: "Монтаж розетки", price: 350, qty: true},
-                    {name: "Вырез под розетку в керамограните", price: 500, qty: true},
-                    {name: "Вырез под розетку в ЛДСП", price: 250, qty: true},
-                    {name: "Выпил в стеновой панели под электрику", price: 350, qty: true},
-                    {name: "Монтаж диодной подсветки", price: 700, meter: true},
-                    {name: "Подключение диодной подсветки", price: 1200}
-                ]
-            },
-            {
-                title: "Столешницы и панели",
-                services: [
-                    {name: "Монтаж стеновой панели клиента", price: 4000},
-                    {name: "Монтаж столешницы клиента (пластик)", price: 5000},
-                    {name: "Выпил стеновой панели", price: 250, qty: true},
-                    {name: "Выпил подоконника", price: 3000, qty: true}
-                ]
-            },
-            {
-                title: "Доп. работы",
-                services: [
-                    {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350, qty: true},
-                    {name: "Выпил под трубы в столешнице", price: 350, qty: true},
-                    {name: "Переделка модуля", price: 1500},
-                    {name: "Монтаж ручки", price: 200},
-                    {name: "Монтаж сушилки усиленной", price: 300},
-                    {name: "Монтаж рейлинга", price: 1000, meter: true},
-                    {name: "Монтаж барной трубы", price: 500},
-                    {name: "Монтаж напольного плинтуса клиента (мин. метр)", price: 800, meter: true},
-                    {name: "Демонтаж плинтуса напольного клиента (мин. метр)", price: 800, meter: true}
-                ]
-            }
+            { title: "Мойка", services: [
+                {name: "Вырез под мойку в столешнице", price: 1500, qty: true},
+                {name: "Монтаж нержавеющей мойки", price: 1000},
+                {name: "Монтаж каменной мойки", price: 1400},
+                {name: "Подключение мойки (слив/сифон)", price: 800}
+            ]},
+            { title: "Смеситель", services: [
+                {name: "Монтаж смесителя с подключением", price: 1200},
+                {name: "Вырез отверстия в столешнице под смеситель", price: 500, qty: true},
+                {name: "Вырез отверстия в пластиковой столешнице под воду", price: 500, qty: true},
+                {name: "Вырез отверстия в каменной столешнице под воду", price: 1000, qty: true},
+                {name: "Монтаж ИПО с подключением", price: 4500},
+                {name: "Монтаж питьевого фильтра с подключением", price: 4000}
+            ]},
+            { title: "Варочная панель", services: [
+                {name: "Вырез под варочную панель в пластиковой столешнице", price: 1500, qty: true},
+                {name: "Вырез под варочную панель в каменной столешнице", price: 2500, qty: true},
+                {name: "Монтаж варочной панели (без подключения)", price: 1000},
+                {name: "Подключение варочной поверхности", price: 500}
+            ]},
+            { title: "Духовой шкаф / СВЧ", services: [
+                {name: "Монтаж духового шкафа (без подключения)", price: 1000},
+                {name: "Подключение духового шкафа", price: 500},
+                {name: "Монтаж СВЧ (без подключения)", price: 1500},
+                {name: "Подключение СВЧ", price: 500}
+            ]},
+            { title: "Вытяжка", services: [
+                {name: "Монтаж встроенной или подвесной вытяжки", price: 2000},
+                {name: "Подключение вытяжки к воздуховоду", price: 1000},
+                {name: "Протяжка воздуховода (гофры)", price: 700, meter: true}
+            ]},
+            { title: "Техника", services: [
+                {name: "Монтаж ПММ с подключением", price: 2500},
+                {name: "Монтаж стиральной машины с подключением", price: 2500},
+                {name: "Монтаж встраиваемого холодильника/холодильной камеры", price: 3500}
+            ]},
+            { title: "Электрика и свет", services: [
+                {name: "Разводка электрики (проводов)", price: 150, meter: true},
+                {name: "Подключение светильника", price: 600},
+                {name: "Врезка светильника", price: 500},
+                {name: "Монтаж накладного светильника", price: 500},
+                {name: "Монтаж розетки", price: 350, qty: true},
+                {name: "Вырез под розетку в керамограните", price: 500, qty: true},
+                {name: "Вырез под розетку в ЛДСП", price: 250, qty: true},
+                {name: "Выпил в стеновой панели под электрику", price: 350, qty: true},
+                {name: "Монтаж диодной подсветки", price: 700, meter: true},
+                {name: "Подключение диодной подсветки", price: 1200}
+            ]},
+            { title: "Столешницы и панели", services: [
+                {name: "Монтаж стеновой панели клиента", price: 4000},
+                {name: "Монтаж столешницы клиента (пластик)", price: 5000},
+                {name: "Выпил стеновой панели", price: 250, qty: true},
+                {name: "Выпил подоконника", price: 3000, qty: true}
+            ]},
+            { title: "Доп. работы", services: [
+                {name: "Выпил в корпусе кухни или подгонка МДФ/ЛДСП панели", price: 350, qty: true},
+                {name: "Выпил под трубы в столешнице", price: 350, qty: true},
+                {name: "Переделка модуля", price: 1500},
+                {name: "Монтаж ручки", price: 200},
+                {name: "Монтаж сушилки усиленной", price: 300},
+                {name: "Монтаж рейлинга", price: 1000, meter: true},
+                {name: "Монтаж барной трубы", price: 500},
+                {name: "Монтаж напольного плинтуса клиента (мин. метр)", price: 800, meter: true},
+                {name: "Демонтаж плинтуса напольного клиента (мин. метр)", price: 800, meter: true}
+            ]}
         ];
 
-        // Плоский список для удобства
         const allServices = [];
         categories.forEach(cat => {
             cat.services.forEach(s => {
@@ -498,73 +447,56 @@
             });
         });
 
-        // ЗАГРУЗКА УСЛУГ ПО КАТЕГОРИЯМ
         function loadServices() {
             const container = document.getElementById('services');
             container.innerHTML = '';
-
             categories.forEach((cat, catIdx) => {
                 const catDiv = document.createElement('div');
                 catDiv.className = 'category';
                 catDiv.id = 'category-' + catIdx;
-
                 const header = document.createElement('div');
                 header.className = 'category-header';
-                header.innerHTML = `
-                    <span>${cat.title} <span class="category-count" id="catcount-${catIdx}">0</span></span>
-                    <span class="arrow">▼</span>
-                `;
+                header.innerHTML = `<span>${cat.title} <span class="category-count" id="catcount-${catIdx}">0</span></span><span class="arrow">▼</span>`;
                 header.onclick = () => toggleCategory(catIdx);
                 catDiv.appendChild(header);
-
                 cat.services.forEach(service => {
                     const idx = service.index;
                     const div = document.createElement('div');
                     div.className = 'service-item';
                     div.id = 'service-' + idx;
-
                     if (service.meter) {
                         div.innerHTML = `
                             <div class="service-name">${service.name} (п.м.)</div>
                             <input type="number" class="meter-input" id="meter-${idx}" placeholder="м" min="0" step="0.5" oninput="updateMeterPrice(${idx})">
                             <span class="service-price" id="price-${idx}">0 руб</span>
-                            <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>
-                        `;
+                            <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
                     } else if (service.qty) {
                         div.innerHTML = `
                             <div class="service-name">${service.name}</div>
                             <input type="number" class="qty-input" id="qty-${idx}" placeholder="шт" min="1" step="1" value="1" oninput="updateQtyPrice(${idx})">
                             <span class="service-price" id="price-${idx}">${service.price} руб</span>
-                            <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>
-                        `;
+                            <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
                     } else {
                         div.innerHTML = `
                             <div class="service-name">${service.name}</div>
                             <div class="service-price">${service.price} руб</div>
-                            <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>
-                        `;
+                            <div class="checkbox" id="cb-${idx}" onclick="toggleService(${idx})"></div>`;
                     }
                     catDiv.appendChild(div);
                 });
-
                 container.appendChild(catDiv);
             });
-
             restoreDraft();
         }
 
-        // СВОРАЧИВАНИЕ КАТЕГОРИИ
         function toggleCategory(catIdx) {
-            const cat = document.getElementById('category-' + catIdx);
-            cat.classList.toggle('collapsed');
+            document.getElementById('category-' + catIdx).classList.toggle('collapsed');
         }
 
-        // ПЕРЕКЛЮЧЕНИЕ УСЛУГИ
         function toggleService(index) {
             const cb = document.getElementById('cb-' + index);
             const service = allServices[index];
             cb.classList.toggle('checked');
-
             if (service.meter && cb.classList.contains('checked')) {
                 const meterInput = document.getElementById('meter-' + index);
                 if (!meterInput.value || parseFloat(meterInput.value) <= 0) {
@@ -608,23 +540,18 @@
             saveDraft();
         }
 
-        // ОСНОВНОЙ РАСЧЕТ
         function calculate() {
             let price = parseInt(document.getElementById('price').value) || 0;
             if (price < 0) price = 0;
-
             let assembly = Math.round(price * ASSEMBLY_PERCENT);
             if (assembly < MIN_ASSEMBLY && price > 0) assembly = MIN_ASSEMBLY;
-
             let extra = 0;
             const selectedList = [];
             const perCategory = {};
-
             document.querySelectorAll('.checkbox.checked').forEach(cb => {
                 const idx = parseInt(cb.id.replace('cb-', ''));
                 const service = allServices[idx];
                 if (!service) return;
-
                 let sum = 0, text = '';
                 if (service.meter) {
                     const meters = parseFloat(document.getElementById('meter-' + idx).value) || 0;
@@ -638,18 +565,15 @@
                     sum = service.price;
                     text = `${service.name} — ${service.price} руб`;
                 }
-
                 if (sum > 0) {
                     extra += sum;
                     selectedList.push(text);
                     perCategory[service.category] = (perCategory[service.category] || 0) + 1;
                 }
             });
-
             let km = parseInt(document.getElementById('km').value) || 0;
             if (km < 0) km = 0;
             const travel = Math.max(0, km - FREE_KM) * KM_PRICE;
-
             const total = assembly + extra + travel;
 
             document.getElementById('total').textContent = total.toLocaleString('ru-RU') + ' руб';
@@ -662,9 +586,7 @@
                 badge.style.background = count ? '#34c759' : '#ccc';
             });
 
-            let detailsHTML = `
-                <div class="line"><span>Сборка (12%):</span> <b>${assembly.toLocaleString('ru-RU')} руб</b></div>
-            `;
+            let detailsHTML = `<div class="line"><span>Сборка (12%):</span> <b>${assembly.toLocaleString('ru-RU')} руб</b></div>`;
             if (selectedList.length) {
                 detailsHTML += `<div style="margin-top:8px; font-weight:600; color:#333;">Доп. работы:</div>`;
                 selectedList.forEach(item => {
@@ -673,9 +595,7 @@
             } else {
                 detailsHTML += `<div class="line"><span>Доп. работы:</span> <b>0 руб</b></div>`;
             }
-            detailsHTML += `
-                <div class="line" style="margin-top:6px;"><span>Выезд (${km} км от ЕКАД):</span> <b>${travel.toLocaleString('ru-RU')} руб</b></div>
-            `;
+            detailsHTML += `<div class="line" style="margin-top:6px;"><span>Выезд (${km} км от ЕКАД):</span> <b>${travel.toLocaleString('ru-RU')} руб</b></div>`;
             document.getElementById('details').innerHTML = detailsHTML;
             document.getElementById('result').style.display = 'block';
 
@@ -686,22 +606,135 @@
             if (addr) metaParts.push('Адрес: ' + addr);
             metaParts.push('Дата: ' + new Date().toLocaleString('ru-RU'));
             document.getElementById('printMeta').innerHTML = metaParts.join('<br>');
+
+            return { total, assembly, extra, travel, selectedList, km, name, addr };
         }
 
-        // ПЕЧАТЬ
+        // ============================================
+        // ПЕЧАТЬ / PDF
+        // ============================================
         function printResult() {
-            calculate();
-            window.print();
+            const data = calculate();
+            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                // На телефоне генерируем PDF и скачиваем
+                try {
+                    downloadPDF(data);
+                } catch (e) {
+                    console.error('PDF error:', e);
+                    alert('Не удалось создать PDF. Используйте кнопку WhatsApp или меню браузера → Печать.');
+                }
+            } else {
+                window.print();
+            }
         }
 
-        // WHATSAPP
+        // Генерация PDF вручную (валидный PDF 1.4 с текстом, кириллица через Windows-1251)
+        function downloadPDF(data) {
+            const { total, assembly, extra, travel, selectedList, km, name, addr } = data;
+            const dateStr = new Date().toLocaleString('ru-RU');
+
+            // Собираем строки для PDF
+            const lines = [];
+            lines.push({ text: 'КАЛЬКУЛЯТОР СБОРКИ', size: 16, bold: true });
+            lines.push({ text: '', size: 10 });
+            if (name) lines.push({ text: 'Клиент: ' + name, size: 10 });
+            if (addr) lines.push({ text: 'Адрес: ' + addr, size: 10 });
+            lines.push({ text: 'Дата: ' + dateStr, size: 10 });
+            lines.push({ text: '', size: 10 });
+            lines.push({ text: 'ИТОГО: ' + total.toLocaleString('ru-RU') + ' руб', size: 14, bold: true });
+            lines.push({ text: '', size: 10 });
+            lines.push({ text: 'Сборка (12%): ' + assembly.toLocaleString('ru-RU') + ' руб', size: 10 });
+            lines.push({ text: 'Доп. работы: ' + extra.toLocaleString('ru-RU') + ' руб', size: 10 });
+            lines.push({ text: 'Выезд (' + km + ' км от ЕКАД): ' + travel.toLocaleString('ru-RU') + ' руб', size: 10 });
+            lines.push({ text: '', size: 10 });
+            if (selectedList.length) {
+                lines.push({ text: 'ДОПОЛНИТЕЛЬНЫЕ РАБОТЫ:', size: 11, bold: true });
+                selectedList.forEach(item => {
+                    lines.push({ text: '• ' + item, size: 9 });
+                });
+            }
+
+            // Экранируем и кодируем в Windows-1251 (PDF-шрифт Helvetica не поддерживает UTF-8 напрямую)
+            function toWin1251(str) {
+                const map = {
+                    'А':'À','Б':'Á','В':'Â','Г':'Ã','Д':'Ä','Е':'Å','Ё':'¨','Ж':'Æ','З':'Ç','И':'È','Й':'É','К':'Ê','Л':'Ë','М':'Ì','Н':'Í','О':'Î','П':'Ï','Р':'Ð','С':'Ñ','Т':'Ò','У':'Ó','Ф':'Ô','Х':'Õ','Ц':'Ö','Ч':'×','Ш':'Ø','Щ':'Ù','Ъ':'Ú','Ы':'Û','Ь':'Ü','Э':'Ý','Ю':'Þ','Я':'ß',
+                    'а':'à','б':'á','в':'â','г':'ã','д':'ä','е':'å','ё':'¸','ж':'æ','з':'ç','и':'è','й':'é','к':'ê','л':'ë','м':'ì','н':'í','о':'î','п':'ï','р':'ð','с':'ñ','т':'ò','у':'ó','ф':'ô','х':'õ','ц':'ö','ч':'÷','ш':'ø','щ':'ù','ъ':'ú','ы':'û','ь':'ü','э':'ý','ю':'þ','я':'ÿ',
+                    '—':'-','–':'-','«':'"','»':'"','₽':'руб','№':'N'
+                };
+                let result = '';
+                for (let i = 0; i < str.length; i++) {
+                    const ch = str[i];
+                    if (map[ch]) result += map[ch];
+                    else if (ch.charCodeAt(0) < 256) result += ch;
+                    else result += '?';
+                }
+                return result;
+            }
+            function escapePDF(str) {
+                return str.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+            }
+
+            // Формируем контент страницы
+            let content = 'BT\n';
+            let y = 800;
+            lines.forEach(line => {
+                if (!line.text) { y -= 8; return; }
+                const font = line.bold ? '/F2' : '/F1';
+                const size = line.size || 10;
+                const txt = escapePDF(toWin1251(line.text));
+                content += `${font} ${size} Tf\n1 0 0 1 50 ${y} Tm\n(${txt}) Tj\n`;
+                y -= size + 5;
+            });
+            content += 'ET\n';
+
+            // Объекты PDF
+            const objects = [];
+            objects.push('<< /Type /Catalog /Pages 2 0 R >>');
+            objects.push('<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+            objects.push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>');
+            objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+            objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+            objects.push(`<< /Length ${content.length} >>\nstream\n${content}endstream`);
+
+            // Собираем PDF
+            let pdf = '%PDF-1.4\n';
+            const offsets = [0];
+            objects.forEach((obj, i) => {
+                offsets.push(pdf.length);
+                pdf += `${i + 1} 0 obj\n${obj}\nendobj\n`;
+            });
+            const xrefPos = pdf.length;
+            pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+            for (let i = 1; i <= objects.length; i++) {
+                pdf += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+            }
+            pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF`;
+
+            // Скачиваем как Blob (используем latin1 для бинарной корректности)
+            const blob = new Blob([pdf], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'raschet-sborki-' + Date.now() + '.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+            // Подсказка пользователю
+            setTimeout(() => {
+                alert('PDF сохранён в загрузки.\n\nОткройте файл через уведомление о загрузке или в папке «Загрузки».');
+            }, 500);
+        }
+
         function shareResult() {
             calculate();
             const name = document.getElementById('clientName').value.trim();
             const addr = document.getElementById('clientAddress').value.trim();
             const total = document.getElementById('total').textContent;
             const details = document.getElementById('details').innerText;
-
             let text = '🪛 Расчёт сборки мебели\n';
             if (name) text += 'Клиент: ' + name + '\n';
             if (addr) text += 'Адрес: ' + addr + '\n';
@@ -709,7 +742,6 @@
             window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
         }
 
-        // СБРОС
         function resetAll() {
             if (!confirm('Сбросить всё? Черновик будет удалён.')) return;
             document.getElementById('price').value = 50000;
@@ -720,27 +752,21 @@
             document.querySelectorAll('.checkbox.checked').forEach(cb => cb.classList.remove('checked'));
             document.querySelectorAll('.meter-input').forEach(inp => inp.value = '');
             document.querySelectorAll('.qty-input').forEach(inp => inp.value = '1');
-            document.querySelectorAll('.service-price').forEach(el => {
-                el.textContent = '0 руб';
-            });
+            document.querySelectorAll('.service-price').forEach(el => el.textContent = '0 руб');
             document.querySelectorAll('.service-item').forEach(i => i.style.display = 'flex');
             document.getElementById('result').style.display = 'none';
             localStorage.removeItem('calcDraft');
         }
 
-        // ПОИСК
         function filterServices() {
             const q = document.getElementById('search').value.toLowerCase().trim();
             document.querySelectorAll('.service-item').forEach(item => {
                 const name = item.querySelector('.service-name').textContent.toLowerCase();
                 item.style.display = name.includes(q) ? 'flex' : 'none';
             });
-            if (q) {
-                document.querySelectorAll('.category').forEach(c => c.classList.remove('collapsed'));
-            }
+            if (q) document.querySelectorAll('.category').forEach(c => c.classList.remove('collapsed'));
         }
 
-        // ЧЕРНОВИК
         function saveDraft() {
             const draft = {
                 clientName: document.getElementById('clientName').value,
@@ -752,12 +778,8 @@
             document.querySelectorAll('.checkbox.checked').forEach(cb => {
                 const idx = cb.id.replace('cb-', '');
                 draft.checked.push(idx);
-                if (allServices[idx].meter) {
-                    draft.meters[idx] = document.getElementById('meter-' + idx).value;
-                }
-                if (allServices[idx].qty) {
-                    draft.qtys[idx] = document.getElementById('qty-' + idx).value;
-                }
+                if (allServices[idx].meter) draft.meters[idx] = document.getElementById('meter-' + idx).value;
+                if (allServices[idx].qty) draft.qtys[idx] = document.getElementById('qty-' + idx).value;
             });
             localStorage.setItem('calcDraft', JSON.stringify(draft));
         }
@@ -771,37 +793,22 @@
                 if (d.clientAddress) document.getElementById('clientAddress').value = d.clientAddress;
                 if (d.price) document.getElementById('price').value = d.price;
                 if (d.km) document.getElementById('km').value = d.km;
-                if (d.meters) {
-                    Object.keys(d.meters).forEach(idx => {
-                        const inp = document.getElementById('meter-' + idx);
-                        if (inp) {
-                            inp.value = d.meters[idx];
-                            updateMeterPrice(parseInt(idx));
-                        }
-                    });
-                }
-                if (d.qtys) {
-                    Object.keys(d.qtys).forEach(idx => {
-                        const inp = document.getElementById('qty-' + idx);
-                        if (inp) {
-                            inp.value = d.qtys[idx];
-                            updateQtyPrice(parseInt(idx));
-                        }
-                    });
-                }
-                if (d.checked) {
-                    d.checked.forEach(idx => {
-                        const cb = document.getElementById('cb-' + idx);
-                        if (cb) cb.classList.add('checked');
-                    });
-                }
+                if (d.meters) Object.keys(d.meters).forEach(idx => {
+                    const inp = document.getElementById('meter-' + idx);
+                    if (inp) { inp.value = d.meters[idx]; updateMeterPrice(parseInt(idx)); }
+                });
+                if (d.qtys) Object.keys(d.qtys).forEach(idx => {
+                    const inp = document.getElementById('qty-' + idx);
+                    if (inp) { inp.value = d.qtys[idx]; updateQtyPrice(parseInt(idx)); }
+                });
+                if (d.checked) d.checked.forEach(idx => {
+                    const cb = document.getElementById('cb-' + idx);
+                    if (cb) cb.classList.add('checked');
+                });
                 calculate();
-            } catch (e) {
-                console.warn('Не удалось восстановить черновик', e);
-            }
+            } catch (e) { console.warn('Draft restore error', e); }
         }
 
-        // ИСТОРИЯ
         function saveToHistory(total) {
             let history = JSON.parse(localStorage.getItem('calcHistory') || '[]');
             history.unshift({ date: new Date().toLocaleString('ru-RU'), total: total });
@@ -819,16 +826,12 @@
                     <div class="history-item">
                         <span class="date">${h.date}</span>
                         <span class="sum">${h.total.toLocaleString('ru-RU')} руб</span>
-                    </div>
-                `).join('');
+                    </div>`).join('');
             }
             document.getElementById('historyModal').classList.add('open');
         }
 
-        function closeHistory() {
-            document.getElementById('historyModal').classList.remove('open');
-        }
-
+        function closeHistory() { document.getElementById('historyModal').classList.remove('open'); }
         function clearHistory() {
             if (!confirm('Очистить всю историю?')) return;
             localStorage.removeItem('calcHistory');
@@ -841,16 +844,13 @@
             saveToHistory(total);
         }
 
-        // ОБРАБОТЧИКИ
         ['price', 'km', 'clientName', 'clientAddress'].forEach(id => {
             document.getElementById(id).addEventListener('input', () => { calculate(); saveDraft(); });
         });
         document.getElementById('search').addEventListener('input', filterServices);
 
-        // ИНИЦИАЛИЗАЦИЯ
         loadServices();
 
-        // РЕГИСТРАЦИЯ SERVICE WORKER
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js')
